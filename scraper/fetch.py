@@ -26,22 +26,20 @@ CLERK_BASE      = "https://clerk.summitoh.net/PublicSite/"
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "7"))
 
-# Exact dropdown values from the live page → our categories
-# value == the exact text that appears in the dropdown
 TARGET_DOC_TYPES = {
-    "CERTIFICATE OF JUDGMENT FOR LIEN":  ("judgment",    "Certificate of Judgment for Lien"),
-    "DECREE OF FORECLOSURE":             ("foreclosure", "Decree of Foreclosure"),
-    "DELINQUENT TAX SHERIFF'S RETURN":   ("lien",        "Delinquent Tax Lien"),
-    "LIEN FILED":                        ("lien",        "Lien Filed"),
-    "MECHANIC'S LIEN RELEASE BOND":      ("lien",        "Mechanic's Lien Release Bond"),
-    "NOTICE OF BANKRUPTCY":              ("bankruptcy",  "Notice of Bankruptcy"),
-    "NOTICE OF FILING DEATH CERTIFICATE":("probate",     "Notice of Filing Death Certificate"),
-    "STATE TAX LIEN FILED":              ("lien",        "State Tax Lien Filed"),
-    "FORECLOSURE COMPLAINT":             ("foreclosure", "Foreclosure Complaint"),
-    "LIS PENDENS":                       ("foreclosure", "Lis Pendens"),
-    "JUDGMENT ENTRY":                    ("judgment",    "Judgment Entry"),
-    "MECHANIC'S LIEN":                   ("lien",        "Mechanic's Lien"),
-    "DECREE OF FORECLOSURE DIRECT":      ("foreclosure", "Decree of Foreclosure Direct"),
+    "CERTIFICATE OF JUDGMENT FOR LIEN FILED": ("judgment",    "Certificate of Judgment for Lien"),
+    "CERT. OF JUDGMENT FOR LIEN FILED":        ("judgment",    "Certificate of Judgment for Lien"),
+    "DECREE OF FORECLOSURE":                   ("foreclosure", "Decree of Foreclosure"),
+    "DECREE OF FORECLOSURE DIRECT TRANSFER":   ("foreclosure", "Decree of Foreclosure"),
+    "DELINQUENT TAX SHERIFF'S RETURN":         ("lien",        "Delinquent Tax Lien"),
+    "LIEN FILED":                              ("lien",        "Lien Filed"),
+    "MECHANIC'S LIEN RELEASE BOND":            ("lien",        "Mechanic's Lien Release Bond"),
+    "MECHANIC'S LIEN":                         ("lien",        "Mechanic's Lien"),
+    "NOTICE OF BANKRUPTCY":                    ("bankruptcy",  "Notice of Bankruptcy"),
+    "NOTICE OF FILING DEATH CERTIFICATE":      ("probate",     "Notice of Filing Death Certificate"),
+    "STATE TAX LIEN FILED":                    ("lien",        "State Tax Lien Filed"),
+    "FORECLOSURE COMPLAINT":                   ("foreclosure", "Foreclosure Complaint"),
+    "LIS PENDENS":                             ("foreclosure", "Lis Pendens"),
 }
 
 REPO_ROOT      = Path(__file__).resolve().parent.parent
@@ -131,7 +129,7 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
         page = await context.new_page()
 
         # Step 1: Disclaimer
-        log.info("Loading disclaimer …")
+        log.info("Loading disclaimer ...")
         await page.goto(DISCLAIMER_PAGE, timeout=60_000, wait_until="networkidle")
         await page.wait_for_timeout(2000)
         try:
@@ -166,22 +164,20 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
         await page.wait_for_timeout(2000)
 
         # Read actual dropdown options from live page
-        dropdown_options = await page.evaluate(f"""
-            Array.from(document.querySelector('{DOC_DROPDOWN}').options)
-            .map(o => ({{value: o.value, text: o.text.trim().toUpperCase()}}))
+        dropdown_options = await page.evaluate("""
+            Array.from(document.querySelector('#ContentPlaceHolder1_drpDocType').options)
+            .map(o => ({value: o.value, text: o.text.trim().toUpperCase()}))
         """)
 
-        # Build lookup: uppercase text → value
+        # Build lookup: uppercase text -> value
         option_lookup = {opt['text']: opt['value'] for opt in dropdown_options}
         log.info("Dropdown has %d options", len(dropdown_options))
 
         # Step 4: Search each target type using exact match
         for doc_type_key, (cat, cat_label) in TARGET_DOC_TYPES.items():
-            # Exact match first
             opt_value = option_lookup.get(doc_type_key.upper())
-
             if not opt_value:
-                log.warning("No exact match for '%s' — skipping", doc_type_key)
+                log.warning("No exact match for '%s' -- skipping", doc_type_key)
                 continue
 
             log.info("Searching: %s", doc_type_key)
@@ -190,7 +186,7 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
                     page, date_from, opt_value, doc_type_key, cat, cat_label
                 )
                 records.extend(type_records)
-                log.info("  → %d records for %s", len(type_records), doc_type_key)
+                log.info("  -> %d records for %s", len(type_records), doc_type_key)
             except Exception as exc:
                 log.warning("Failed %s: %s", doc_type_key, exc)
 
@@ -208,10 +204,10 @@ async def _search_one_type(
 ) -> list[dict]:
     records: list[dict] = []
 
-    # Go back to search form
-    if "SearchByMixed" not in page.url:
-        await page.goto(SEARCH_URL, timeout=30000, wait_until="networkidle")
-        await page.wait_for_timeout(1500)
+    # Always navigate fresh to search form to avoid stale state
+    await page.goto(SEARCH_URL, timeout=30000, wait_until="networkidle")
+    await page.wait_for_timeout(2000)
+    await page.wait_for_selector(DATE_FIELD, timeout=10000)
 
     # Fill date
     try:
@@ -314,10 +310,10 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
                 if case_num.lower() in ("case number", "case no", "number", "no."):
                     continue
 
-                filed    = parse_date(cell(i_date))
-                party1   = normalize(cell(i_party1))
-                party2   = normalize(cell(i_party2))
-                amount   = safe_float(cell(i_amount))
+                filed        = parse_date(cell(i_date))
+                party1       = normalize(cell(i_party1))
+                party2       = normalize(cell(i_party2))
+                amount       = safe_float(cell(i_amount))
                 doc_type_raw = cell(i_type) or cat_label
 
                 clerk_url = base_url
@@ -448,7 +444,7 @@ def _split_name(full: str) -> tuple[str, str]:
 def write_outputs(records, fetched_at, start_date, end_date):
     payload = {
         "fetched_at":   fetched_at,
-        "source":       "Summit County Clerk of Courts – Civil Division",
+        "source":       "Summit County Clerk of Courts - Civil Division",
         "date_range":   {
             "from": start_date.strftime("%Y-%m-%d"),
             "to":   end_date.strftime("%Y-%m-%d"),
@@ -489,7 +485,7 @@ def write_outputs(records, fetched_at, start_date, end_date):
                 "Amount/Debt Owed":       rec.get("amount", ""),
                 "Seller Score":           rec.get("score", 0),
                 "Motivated Seller Flags": "; ".join(rec.get("flags", [])),
-                "Source":                 "Summit County Clerk of Courts – Civil Division",
+                "Source":                 "Summit County Clerk of Courts - Civil Division",
                 "Public Records URL":     rec.get("clerk_url", ""),
             })
     log.info("Wrote GHL CSV: %s", GHL_CSV)
@@ -507,7 +503,7 @@ async def main():
     date_from = start_date.strftime("%m/%d/%Y")
     date_to   = end_date.strftime("%m/%d/%Y")
 
-    log.info("Summit County Lead Scraper | %s → %s", date_from, date_to)
+    log.info("Summit County Lead Scraper | %s -> %s", date_from, date_to)
 
     raw = await scrape(date_from, date_to)
     log.info("Raw records: %d", len(raw))
