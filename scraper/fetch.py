@@ -27,20 +27,18 @@ CLERK_BASE      = "https://clerk.summitoh.net/PublicSite/"
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "7"))
 
 TARGET_DOC_TYPES = {
-    "CERTIFICATE OF JUDGMENT FOR LIEN FILED": ("judgment",    "Certificate of Judgment for Lien"),
-    "CERT. OF JUDGMENT FOR LIEN FILED":        ("judgment",    "Certificate of Judgment for Lien"),
-    "DECREE OF FORECLOSURE":                   ("foreclosure", "Decree of Foreclosure"),
-    "DECREE OF FORECLOSURE DIRECT TRANSFER":   ("foreclosure", "Decree of Foreclosure"),
-    "DELINQUENT TAX SHERIFF'S RETURN":         ("lien",        "Delinquent Tax Lien"),
-    "LIEN FILED":                              ("lien",        "Lien Filed"),
-    "MECHANIC'S LIEN RELEASE BOND":            ("lien",        "Mechanic's Lien Release Bond"),
-    "MECHANIC'S LIEN":                         ("lien",        "Mechanic's Lien"),
-    "NOTICE OF BANKRUPTCY":                    ("bankruptcy",  "Notice of Bankruptcy"),
-    "NOTICE OF FILING DEATH CERTIFICATE":      ("probate",     "Notice of Filing Death Certificate"),
-    "STATE TAX LIEN FILED":                    ("lien",        "State Tax Lien Filed"),
-    "FORECLOSURE COMPLAINT":                   ("foreclosure", "Foreclosure Complaint"),
-    "LIS PENDENS":                             ("foreclosure", "Lis Pendens"),
+    "DECREE OF FORECLOSURE.":                          ("foreclosure", "Decree of Foreclosure"),
+    "FORECLOSURE COMPLAINT":                           ("foreclosure", "Foreclosure Complaint"),
+    "CLERK'S CERTIFICATE FOR PENDING SUITE FOR LIS PENDENS": ("foreclosure", "Lis Pendens"),
+    "DELINQUENT TAX SHERIFF'S RETURN":                ("lien",        "Delinquent Tax Lien"),
+    "STATE TAX LIEN FILED.":                          ("lien",        "State Tax Lien Filed"),
+    "MECHANIC'S LIEN RELEASE BOND":                   ("lien",        "Mechanic's Lien Release Bond"),
+    "AKRON MUNI CERT. OF JUDGMENT LIEN FILED":        ("judgment",    "Certificate of Judgment Lien"),
+    "BARBERTON MUNI CERT. OF JUDGMENT LIEN FILED":    ("judgment",    "Certificate of Judgment Lien"),
+    "CUYA. FALLS MUNI CERT. OF JUDGMENT LIEN FILED":  ("judgment",    "Certificate of Judgment Lien"),
+    "NOTICE OF FILING DEATH CERTIFICATE":             ("probate",     "Notice of Filing Death Certificate"),
 }
+That's the only change needed — just that dict. Commit and run!Sonnet 4.6
 
 REPO_ROOT      = Path(__file__).resolve().parent.parent
 DASHBOARD_JSON = REPO_ROOT / "dashboard" / "records.json"
