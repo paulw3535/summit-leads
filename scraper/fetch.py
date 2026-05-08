@@ -486,4 +486,305 @@ def fetch_all_records(date_from: str, date_to: str) -> list[dict]:
             # No left panel found — parse the broad results and filter by type
             log.info("No type filters found, parsing all results and filtering")
             page_records, _ = parse_tyler_results(resp.text, "")
-            for rec i
+            for rec in page_records:
+                if any(key in rec["doc_type"].upper() for key in TARGET_DOC_TYPES):
+                    all_records.append(rec)
+
+            # Also try per-type POST searches
+            for doc_type_name in TARGET_DOC_TYPES:
+                try:
+                    recs = search_recorder(session, date_from, date_to, doc_type_name)
+                    all_records.extend(recs)
+                    log.info("Type search '%s' → %d records", doc_type_name, len(recs))
+                except Exception as exc:
+                    log.warning("Type search '%s' failed: %s", doc_type_name, exc)
+                time.sleep(1)
+
+    except Exception as exc:
+        log.error("Broad search failed: %s", exc)
+
+    return all_records
+
+
+def _extract_type_links(soup: BeautifulSoup, base_url: str) -> dict[str, str]:
+    """Extract document type filter links from the left panel."""
+    links: dict[str, str] = {}
+
+    # Tyler typically renders left panel as <ul> or <div> with filter links
+    for a in soup.find_all("a", href=True):
+        text = a.get_text(strip=True).upper()
+        href = a["href"]
+        # Filter links usually contain DocType or similar in the URL
+        if any(key in text for key in TARGET_DOC_TYPES):
+            full_url = urljoin(base_url, href)
+            links[text] = full_url
+
+    # Also check buttons with onclick or data attributes
+    for btn in soup.find_all(["button", "input"], attrs={"onclick": True}):
+        text = btn.get_text(strip=True).upper()
+        onclick = btn.get("onclick", "")
+        if any(key in text for key in TARGET_DOC_TYPES):
+            url_match = re.search(r"'([^']+)'", onclick)
+            if url_match:
+                links[text] = urljoin(base_url, url_match.group(1))
+
+    return links
+
+
+def _paginate_tyler(session: requests.Session, start_url: str, doc_type: str) -> list[dict]:
+    """Follow pagination on a Tyler results page."""
+    records: list[dict] = []
+    url = start_url
+
+    for _ in range(50):  # max 50 pages per type
+        try:
+            resp = session.get(url, timeout=60)
+            resp.raise_for_status()
+        except Exception as exc:
+            log.warning("Pagination GET failed: %s", exc)
+            break
+
+        page_records, has_next = parse_tyler_results(resp.text, doc_type)
+        records.extend(page_records)
+
+        if not has_next:
+            break
+
+        soup = BeautifulSoup(resp.text, "lxml")
+        next_link = (
+            soup.find("a", string=re.compile(r"Next|>", re.I)) or
+            soup.select_one("a.next, li.next > a, .pagination .next")
+        )
+        if not next_link or not next_link.get("href"):
+            break
+        url = urljoin(resp.url, next_link["href"])
+        time.sleep(1)
+
+    return records
+
+
+# ---------------------------------------------------------------------------
+# 3. Parcel lookup (Summit County Fiscal Office property search)
+# ---------------------------------------------------------------------------
+
+def build_parcel_lookup_from_web(session: requests.Session) -> dict[str, dict]:
+    """
+    The Tyler system itself shows parcel numbers in results.
+    We use the Summit County property search to look up addresses by parcel.
+    This is a best-effort enrichment.
+    """
+    log.info("Parcel lookup will be done per-record from Tyler legal descriptions")
+    return {}
+
+
+def enrich_from_legal(record: dict) -> dict:
+    """Extract parcel number from legal description and look up address."""
+    legal = record.get("legal", "")
+    parcel_match = re.search(r"Parcel[:\s]+(\d[\d-]+)", legal, re.I)
+    if parcel_match:
+        record["parcel"] = parcel_match.group(1)
+    return record
+
+
+# ---------------------------------------------------------------------------
+# 4. Scoring
+# ---------------------------------------------------------------------------
+
+def score_record(rec: dict, all_records: list[dict]) -> tuple[int, list[str]]:
+    flags: list[str] = []
+    score = 30
+
+    cat    = rec.get("cat", "")
+    dtype  = rec.get("doc_type", "")
+    owner  = rec.get("owner", "")
+    amount = rec.get("amount")
+    filed  = rec.get("filed", "")
+
+    if cat == "foreclosure":
+        flags.append("Lis pendens" if "PENDENS" in dtype else "Pre-foreclosure")
+        if "SHERIFF" in dtype:
+            flags.append("Sheriff sale")
+        score += 10
+
+    if cat == "judgment":
+        flags.append("Judgment lien")
+        score += 10
+
+    if cat == "lien":
+        if any(x in dtype for x in ("FEDERAL", "STATE", "TAX", "ASSESSMENT")):
+            flags.append("Tax lien")
+        elif "MECHANIC" in dtype:
+            flags.append("Mechanic lien")
+        elif "CHILD" in dtype:
+            flags.append("Child support lien")
+        else:
+            flags.append("Judgment lien")
+        score += 10
+
+    if cat == "probate":
+        flags.append("Probate / estate")
+        score += 10
+
+    # LP + foreclosure combo bonus
+    owner_docs = [r for r in all_records if r.get("owner") == owner and r is not rec]
+    has_lp = any("PENDENS" in r.get("doc_type", "") for r in owner_docs) or "PENDENS" in dtype
+    has_fc = any(r.get("cat") == "foreclosure" for r in owner_docs)
+    if has_lp and has_fc:
+        score += 20
+
+    if amount:
+        if amount > 100_000:
+            flags.append("High debt (>$100k)")
+            score += 15
+        elif amount > 50_000:
+            score += 10
+
+    if owner and re.search(r"\b(LLC|INC|CORP|LTD|TRUST|ESTATE)\b", owner):
+        flags.append("LLC / corp owner")
+        score += 10
+
+    try:
+        if (datetime.now() - datetime.strptime(filed, "%Y-%m-%d")).days <= 7:
+            flags.append("New this week")
+            score += 5
+    except Exception:
+        pass
+
+    if rec.get("prop_address"):
+        score += 5
+
+    return min(score, 100), flags
+
+
+# ---------------------------------------------------------------------------
+# 5. Output writers
+# ---------------------------------------------------------------------------
+
+GHL_FIELDS = [
+    "First Name", "Last Name",
+    "Mailing Address", "Mailing City", "Mailing State", "Mailing Zip",
+    "Property Address", "Property City", "Property State", "Property Zip",
+    "Lead Type", "Document Type", "Date Filed", "Document Number",
+    "Amount/Debt Owed", "Seller Score", "Motivated Seller Flags",
+    "Source", "Public Records URL",
+]
+
+
+def _split_name(full: str) -> tuple[str, str]:
+    full = full.strip()
+    if "," in full:
+        parts = [p.strip() for p in full.split(",", 1)]
+        first = parts[1].split()[0].title() if parts[1].split() else ""
+        return first, parts[0].title()
+    tokens = full.split()
+    if len(tokens) == 1:
+        return "", tokens[0].title()
+    return tokens[0].title(), " ".join(tokens[1:]).title()
+
+
+def write_outputs(records, fetched_at, start_date, end_date):
+    payload = {
+        "fetched_at":   fetched_at,
+        "source":       "Summit County Fiscal Office – Recording Division",
+        "date_range":   {
+            "from": start_date.strftime("%Y-%m-%d"),
+            "to":   end_date.strftime("%Y-%m-%d"),
+        },
+        "total":        len(records),
+        "with_address": sum(1 for r in records if r.get("prop_address")),
+        "records":      records,
+    }
+
+    for path in (DASHBOARD_JSON, DATA_JSON):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+        log.info("Wrote %s", path)
+
+    GHL_CSV.parent.mkdir(parents=True, exist_ok=True)
+    with GHL_CSV.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=GHL_FIELDS)
+        writer.writeheader()
+        for rec in records:
+            first, last = _split_name(rec.get("owner", ""))
+            writer.writerow({
+                "First Name":             first,
+                "Last Name":              last,
+                "Mailing Address":        rec.get("mail_address", ""),
+                "Mailing City":           rec.get("mail_city", ""),
+                "Mailing State":          rec.get("mail_state", ""),
+                "Mailing Zip":            rec.get("mail_zip", ""),
+                "Property Address":       rec.get("prop_address", ""),
+                "Property City":          rec.get("prop_city", ""),
+                "Property State":         rec.get("prop_state", "OH"),
+                "Property Zip":           rec.get("prop_zip", ""),
+                "Lead Type":              rec.get("cat_label", ""),
+                "Document Type":          rec.get("doc_type", ""),
+                "Date Filed":             rec.get("filed", ""),
+                "Document Number":        rec.get("doc_num", ""),
+                "Amount/Debt Owed":       rec.get("amount", ""),
+                "Seller Score":           rec.get("score", 0),
+                "Motivated Seller Flags": "; ".join(rec.get("flags", [])),
+                "Source":                 "Summit County Fiscal Office – Recording Division",
+                "Public Records URL":     rec.get("clerk_url", ""),
+            })
+    log.info("Wrote GHL CSV: %s", GHL_CSV)
+
+
+# ---------------------------------------------------------------------------
+# 6. Main
+# ---------------------------------------------------------------------------
+
+def main():
+    end_date   = datetime.now(timezone.utc).replace(tzinfo=None)
+    start_date = end_date - timedelta(days=LOOKBACK_DAYS)
+    fetched_at = datetime.now(timezone.utc).isoformat()
+
+    date_from = start_date.strftime("%m/%d/%Y")
+    date_to   = end_date.strftime("%m/%d/%Y")
+
+    log.info("Summit County Lead Scraper | %s → %s", date_from, date_to)
+
+    # 1. Fetch records
+    raw = fetch_all_records(date_from, date_to)
+    log.info("Total raw records fetched: %d", len(raw))
+
+    # 2. De-duplicate
+    seen: set[str] = set()
+    unique: list[dict] = []
+    for rec in raw:
+        key = rec.get("doc_num", "")
+        if key and key not in seen:
+            seen.add(key)
+            unique.append(rec)
+        elif not key:
+            unique.append(rec)
+
+    # 3. Enrich legal descriptions
+    for rec in unique:
+        enrich_from_legal(rec)
+
+    # 4. Score
+    enriched: list[dict] = []
+    for rec in unique:
+        try:
+            score, flags = score_record(rec, unique)
+            rec["score"] = score
+            rec["flags"] = flags
+            enriched.append(rec)
+        except Exception as exc:
+            log.warning("Score error (skipped): %s", exc)
+
+    enriched.sort(key=lambda r: r.get("score", 0), reverse=True)
+
+    # 5. Write
+    write_outputs(enriched, fetched_at, start_date, end_date)
+
+    log.info(
+        "Done. %d leads | top score: %s",
+        len(enriched),
+        enriched[0].get("score", "n/a") if enriched else "n/a",
+    )
+
+
+if __name__ == "__main__":
+    main()
