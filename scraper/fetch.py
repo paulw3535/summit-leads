@@ -1,7 +1,7 @@
 """
 Summit County, Ohio – Motivated Seller Lead Scraper
 Targets: clerk.summitoh.net/PublicSite/SearchByMixed.aspx
-Exact field IDs confirmed from live page inspection.
+Field IDs and dropdown values confirmed from live inspection.
 """
 
 from __future__ import annotations
@@ -26,15 +26,22 @@ CLERK_BASE      = "https://clerk.summitoh.net/PublicSite/"
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "7"))
 
+# Exact dropdown values from the live page → our categories
+# value == the exact text that appears in the dropdown
 TARGET_DOC_TYPES = {
-    "CERTIFICATE OF JUDGMENT FOR LIEN": ("judgment",    "Certificate of Judgment for Lien"),
-    "DECREE A CLOSURE":                 ("foreclosure", "Decree of Foreclosure"),
-    "DELINQUENT TAX SERVICE RETURN":    ("lien",        "Delinquent Tax Lien"),
-    "LIEN FILED":                       ("lien",        "Lien Filed"),
-    "MECHANIC'S LIEN RELEASE BOND":     ("lien",        "Mechanic's Lien Release Bond"),
-    "NOTICE OF BANKRUPTCY":             ("bankruptcy",  "Notice of Bankruptcy"),
-    "NOTICE FILING DEATH CERTIFICATE":  ("probate",     "Notice Filing Death Certificate"),
-    "STATE TAX LIEN FILED":             ("lien",        "State Tax Lien Filed"),
+    "CERTIFICATE OF JUDGMENT FOR LIEN":  ("judgment",    "Certificate of Judgment for Lien"),
+    "DECREE OF FORECLOSURE":             ("foreclosure", "Decree of Foreclosure"),
+    "DELINQUENT TAX SHERIFF'S RETURN":   ("lien",        "Delinquent Tax Lien"),
+    "LIEN FILED":                        ("lien",        "Lien Filed"),
+    "MECHANIC'S LIEN RELEASE BOND":      ("lien",        "Mechanic's Lien Release Bond"),
+    "NOTICE OF BANKRUPTCY":              ("bankruptcy",  "Notice of Bankruptcy"),
+    "NOTICE OF FILING DEATH CERTIFICATE":("probate",     "Notice of Filing Death Certificate"),
+    "STATE TAX LIEN FILED":              ("lien",        "State Tax Lien Filed"),
+    "FORECLOSURE COMPLAINT":             ("foreclosure", "Foreclosure Complaint"),
+    "LIS PENDENS":                       ("foreclosure", "Lis Pendens"),
+    "JUDGMENT ENTRY":                    ("judgment",    "Judgment Entry"),
+    "MECHANIC'S LIEN":                   ("lien",        "Mechanic's Lien"),
+    "DECREE OF FORECLOSURE DIRECT":      ("foreclosure", "Decree of Foreclosure Direct"),
 }
 
 REPO_ROOT      = Path(__file__).resolve().parent.parent
@@ -49,9 +56,7 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-# Exact field IDs from live page inspection
 DATE_FIELD   = "#ContentPlaceHolder1_tbFilingDate"
-MONTH_FIELD  = "#ContentPlaceHolder1_tbFilingMonth"
 DOC_DROPDOWN = "#ContentPlaceHolder1_drpDocType"
 SEARCH_BTN   = "#ContentPlaceHolder1_btnSearch"
 
@@ -86,7 +91,7 @@ def normalize(s: str) -> str:
 def categorize(doc_type: str) -> tuple[str, str]:
     upper = doc_type.upper().strip()
     for key, (cat, label) in TARGET_DOC_TYPES.items():
-        if key in upper or upper in key:
+        if key == upper:
             return cat, label
     if "LIEN" in upper:
         return "lien", doc_type.title()
@@ -145,7 +150,7 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
         except Exception as e:
             log.warning("Civil click failed: %s", e)
 
-        # Step 3: Search by judge/date/type
+        # Step 3: Search by date/type form
         await page.wait_for_timeout(1500)
         try:
             await page.click(
@@ -155,42 +160,37 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
             await page.wait_for_load_state("networkidle", timeout=15000)
             log.info("Search form URL: %s", page.url)
         except Exception as e:
-            log.warning("Search form nav failed, going direct: %s", e)
+            log.warning("Nav failed, going direct: %s", e)
             await page.goto(SEARCH_URL, timeout=30000, wait_until="networkidle")
 
         await page.wait_for_timeout(2000)
 
-        # Read all dropdown options once so we can match them
+        # Read actual dropdown options from live page
         dropdown_options = await page.evaluate(f"""
             Array.from(document.querySelector('{DOC_DROPDOWN}').options)
-            .map(o => ({{value: o.value, text: o.text.trim()}}))
+            .map(o => ({{value: o.value, text: o.text.trim().toUpperCase()}}))
         """)
-        log.info("Dropdown options: %s", dropdown_options)
 
-        # Step 4: Search each target doc type
+        # Build lookup: uppercase text → value
+        option_lookup = {{opt['text']: opt['value'] for opt in dropdown_options}}
+        log.info("Dropdown has %d options", len(dropdown_options))
+
+        # Step 4: Search each target type using exact match
         for doc_type_key, (cat, cat_label) in TARGET_DOC_TYPES.items():
-            # Find best matching option
-            match = None
-            for opt in dropdown_options:
-                opt_text = opt['text'].upper().strip()
-                if (doc_type_key in opt_text or
-                    opt_text in doc_type_key or
-                    any(word in opt_text for word in doc_type_key.split() if len(word) > 3)):
-                    match = opt
-                    break
+            # Exact match first
+            opt_value = option_lookup.get(doc_type_key.upper())
 
-            if not match:
-                log.warning("No dropdown match for: %s", doc_type_key)
+            if not opt_value:
+                log.warning("No exact match for '%s' — skipping", doc_type_key)
                 continue
 
-            log.info("Searching: %s → matched '%s'", doc_type_key, match['text'])
-
+            log.info("Searching: %s", doc_type_key)
             try:
                 type_records = await _search_one_type(
-                    page, date_from, match['value'], match['text'], cat, cat_label
+                    page, date_from, opt_value, doc_type_key, cat, cat_label
                 )
                 records.extend(type_records)
-                log.info("  → %d records for %s", len(type_records), match['text'])
+                log.info("  → %d records for %s", len(type_records), doc_type_key)
             except Exception as exc:
                 log.warning("Failed %s: %s", doc_type_key, exc)
 
@@ -203,36 +203,35 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
 
 
 async def _search_one_type(
-    page, date_from: str, doc_type_value: str,
+    page, date_from: str, opt_value: str,
     doc_type_label: str, cat: str, cat_label: str
 ) -> list[dict]:
     records: list[dict] = []
 
-    # Navigate back to search form if needed
-    if SEARCH_URL not in page.url:
+    # Go back to search form
+    if "SearchByMixed" not in page.url:
         await page.goto(SEARCH_URL, timeout=30000, wait_until="networkidle")
         await page.wait_for_timeout(1500)
 
-    # Fill date — use the exact field ID
+    # Fill date
     try:
         await page.fill(DATE_FIELD, date_from, timeout=5000)
         log.debug("Filled date: %s", date_from)
     except Exception as e:
         log.warning("Date fill failed: %s", e)
 
-    # Select document type by value
+    # Select doc type by exact value
     try:
-        await page.select_option(DOC_DROPDOWN, value=doc_type_value, timeout=5000)
-        log.debug("Selected doc type: %s", doc_type_label)
+        await page.select_option(DOC_DROPDOWN, value=opt_value, timeout=5000)
+        log.debug("Selected: %s", doc_type_label)
     except Exception as e:
-        log.warning("Doc type select failed: %s", e)
+        log.warning("Select failed: %s", e)
 
-    # Click Search button
+    # Click Search
     try:
         await page.click(SEARCH_BTN, timeout=5000)
         await page.wait_for_load_state("networkidle", timeout=30000)
         await page.wait_for_timeout(2000)
-        log.debug("Search submitted. URL: %s", page.url)
     except Exception as e:
         log.warning("Search click failed: %s", e)
         return records
@@ -246,14 +245,11 @@ async def _search_one_type(
         records.extend(page_records)
         log.debug("  Page %d: %d records", page_num, len(page_records))
 
-        # Check for next page
         next_btn = page.locator(
-            "a:has-text('Next'), input[value='Next'], "
-            "a[title*='next'], .next > a"
+            "a:has-text('Next'), input[value='Next'], .next > a"
         ).first
         try:
-            visible = await next_btn.is_visible(timeout=2000)
-            if not visible:
+            if not await next_btn.is_visible(timeout=2000):
                 break
             await next_btn.click(timeout=10000)
             await page.wait_for_load_state("networkidle", timeout=20000)
@@ -281,10 +277,11 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
             for th in rows[0].find_all(["th", "td"])
         ]
         if not any(h in headers for h in
-                   ["case", "name", "date", "filed", "doc", "party", "type", "plaintiff"]):
+                   ["case", "name", "date", "filed", "doc",
+                    "party", "type", "plaintiff", "number"]):
             continue
 
-        log.debug("Found results table with headers: %s", headers)
+        log.debug("Results table headers: %s", headers)
 
         def ci(*candidates):
             for c in candidates:
@@ -293,12 +290,12 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
                         return i
             return -1
 
-        i_case    = ci("case", "number", "no")
-        i_date    = ci("date", "filed")
-        i_party1  = ci("plaintiff", "grantor", "name", "party")
-        i_party2  = ci("defendant", "grantee")
-        i_type    = ci("type", "doc", "description")
-        i_amount  = ci("amount", "debt", "judgment")
+        i_case   = ci("case", "number", "no")
+        i_date   = ci("date", "filed")
+        i_party1 = ci("plaintiff", "grantor", "name", "party")
+        i_party2 = ci("defendant", "grantee")
+        i_type   = ci("type", "doc", "description")
+        i_amount = ci("amount", "debt", "judgment")
 
         for row in rows[1:]:
             cells = row.find_all(["td", "th"])
@@ -314,20 +311,18 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
                 case_num = cell(i_case) or cell(0)
                 if not case_num or not re.search(r"\w{3,}", case_num):
                     continue
-
-                # Skip header-like rows
-                if case_num.lower() in ("case number", "case no", "number"):
+                if case_num.lower() in ("case number", "case no", "number", "no."):
                     continue
 
+                filed    = parse_date(cell(i_date))
+                party1   = normalize(cell(i_party1))
+                party2   = normalize(cell(i_party2))
+                amount   = safe_float(cell(i_amount))
                 doc_type_raw = cell(i_type) or cat_label
-                filed        = parse_date(cell(i_date))
-                party1       = normalize(cell(i_party1))
-                party2       = normalize(cell(i_party2))
-                amount       = safe_float(cell(i_amount))
 
                 clerk_url = base_url
-                link_cell = cells[max(i_case, 0)] if i_case < len(cells) else cells[0]
-                anchor = link_cell.find("a", href=True)
+                lc = cells[max(i_case, 0)] if i_case < len(cells) else cells[0]
+                anchor = lc.find("a", href=True)
                 if anchor:
                     clerk_url = urljoin(base_url, anchor["href"])
 
@@ -352,7 +347,7 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
                     "mail_zip":     "",
                 })
             except Exception as exc:
-                log.debug("Row parse error: %s", exc)
+                log.debug("Row error: %s", exc)
 
     return records
 
@@ -396,9 +391,8 @@ def score_record(rec: dict, all_records: list[dict]) -> tuple[int, list[str]]:
         score += 10
 
     owner_docs = [r for r in all_records if r.get("owner") == owner and r is not rec]
-    has_fc   = any(r.get("cat") == "foreclosure" for r in owner_docs)
-    has_lien = any(r.get("cat") == "lien" for r in owner_docs)
-    if has_fc and has_lien:
+    if (any(r.get("cat") == "foreclosure" for r in owner_docs) and
+            any(r.get("cat") == "lien" for r in owner_docs)):
         score += 20
 
     if amount:
