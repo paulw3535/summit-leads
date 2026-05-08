@@ -221,6 +221,8 @@ async def _search_one_type(
         await page.click(SEARCH_BTN, timeout=5000)
         await page.wait_for_load_state("networkidle", timeout=30000)
         await page.wait_for_timeout(2000)
+        body_text = await page.inner_text("body")
+        log.info("Results page text (first 300): %s", body_text[:300].replace("\n", " "))
     except Exception as e:
         log.warning("Search click failed: %s", e)
         return records
@@ -270,7 +272,7 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
                     "party", "type", "plaintiff", "number"]):
             continue
 
-        log.debug("Results table headers: %s", headers)
+        log.info("Results table headers: %s", headers)
 
         def ci(*candidates):
             for c in candidates:
