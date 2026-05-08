@@ -172,7 +172,7 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
         """)
 
         # Build lookup: uppercase text → value
-        option_lookup = {{opt['text']: opt['value'] for opt in dropdown_options}}
+        option_lookup = {opt['text']: opt['value'] for opt in dropdown_options}
         log.info("Dropdown has %d options", len(dropdown_options))
 
         # Step 4: Search each target type using exact match
