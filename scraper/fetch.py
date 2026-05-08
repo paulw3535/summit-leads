@@ -1,6 +1,6 @@
 """
 Summit County, Ohio – Motivated Seller Lead Scraper
-Tyler Self-Service jQuery Mobile app — screenshot debugging enabled
+Targets: clerk.summitoh.net (Clerk of Courts - Civil Division)
 """
 
 from __future__ import annotations
@@ -19,35 +19,26 @@ from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
-RECORDER_BASE = "https://summitcountyoh-web.tylerhost.net/web/"
+DISCLAIMER_PAGE = "https://clerk.summitoh.net/RecordsSearch/Disclaimer.asp?toPage=SelectDivision.asp"
+CLERK_BASE      = "https://clerk.summitoh.net/RecordsSearch/"
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "7"))
 
 TARGET_DOC_TYPES = {
-    "LIS PENDENS":             ("foreclosure", "Lis Pendens"),
-    "NOTICE OF FORECLOSURE":   ("foreclosure", "Notice of Foreclosure"),
-    "SHERIFFS DEED":           ("foreclosure", "Sheriffs Deed"),
-    "FEDERAL TAX LIEN":        ("lien",        "Federal Tax Lien"),
-    "FEDERAL LIEN":            ("lien",        "Federal Lien"),
-    "STATE OF OH LIEN":        ("lien",        "State of OH Lien"),
-    "ASSESSMENT LIEN":         ("lien",        "Assessment Lien"),
-    "CHILD SUPPORT LIEN":      ("lien",        "Child Support Lien"),
-    "DELINQUENT TAX LIEN":     ("lien",        "Delinquent Tax Lien"),
-    "LIEN":                    ("lien",        "Lien"),
-    "MECHANICS LIEN":          ("lien",        "Mechanic Lien"),
-    "JUDGMENT LIEN":           ("judgment",    "Judgment Lien"),
-    "CERTIFICATE OF JUDGMENT": ("judgment",    "Certificate of Judgment"),
-    "TRANSFER ON DEATH":       ("probate",     "Transfer on Death"),
-    "NOTICE OF COMMENCEMENT":  ("noc",         "Notice of Commencement"),
-    "LIS PENDENS RELEASE":     ("release",     "Lis Pendens Release"),
-    "RELEASE OF LIS PENDENS":  ("release",     "Release of Lis Pendens"),
+    "CERTIFICATE OF JUDGMENT FOR LIEN": ("judgment",    "Certificate of Judgment for Lien"),
+    "DECREE A CLOSURE":                 ("foreclosure", "Decree of Foreclosure"),
+    "DELINQUENT TAX SERVICE RETURN":    ("lien",        "Delinquent Tax Lien"),
+    "LIEN FILED":                       ("lien",        "Lien Filed"),
+    "MECHANIC'S LIEN RELEASE BOND":     ("lien",        "Mechanic's Lien Release Bond"),
+    "NOTICE OF BANKRUPTCY":             ("bankruptcy",  "Notice of Bankruptcy"),
+    "NOTICE FILING DEATH CERTIFICATE":  ("probate",     "Notice Filing Death Certificate"),
+    "STATE TAX LIEN FILED":             ("lien",        "State Tax Lien Filed"),
 }
 
 REPO_ROOT      = Path(__file__).resolve().parent.parent
 DASHBOARD_JSON = REPO_ROOT / "dashboard" / "records.json"
 DATA_JSON      = REPO_ROOT / "data"      / "records.json"
 GHL_CSV        = REPO_ROOT / "data"      / "ghl_export.csv"
-SCREENSHOT_DIR = REPO_ROOT / "dashboard" / "debug"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -72,15 +63,11 @@ def safe_float(v: Any) -> Optional[float]:
 def parse_date(raw: str) -> str:
     if not raw:
         return ""
-    for fmt in ("%m/%d/%Y %I:%M %p", "%m/%d/%Y %H:%M", "%m/%d/%Y", "%Y-%m-%d"):
+    for fmt in ("%m/%d/%Y", "%m-%d-%Y", "%Y-%m-%d"):
         try:
-            return datetime.strptime(raw.strip(), fmt).strftime("%Y-%m-%d")
+            return datetime.strptime(raw.strip()[:10], fmt).strftime("%Y-%m-%d")
         except Exception:
             pass
-    try:
-        return datetime.strptime(raw.strip()[:10], "%m/%d/%Y").strftime("%Y-%m-%d")
-    except Exception:
-        pass
     return raw.strip()[:10]
 
 
@@ -91,27 +78,19 @@ def normalize(s: str) -> str:
 def categorize(doc_type: str) -> tuple[str, str]:
     upper = doc_type.upper().strip()
     for key, (cat, label) in TARGET_DOC_TYPES.items():
-        if key in upper:
+        if key in upper or upper in key:
             return cat, label
     if "LIEN" in upper:
         return "lien", doc_type.title()
-    if "PENDENS" in upper or "FORECLOS" in upper or "SHERIFF" in upper:
+    if "FORECLOS" in upper or "DECREE" in upper:
         return "foreclosure", doc_type.title()
-    if "JUDGMENT" in upper:
+    if "JUDGMENT" in upper or "CERTIFICATE" in upper:
         return "judgment", doc_type.title()
-    if "DEATH" in upper or "PROBATE" in upper or "ESTATE" in upper:
+    if "BANKRUPTCY" in upper:
+        return "bankruptcy", doc_type.title()
+    if "DEATH" in upper or "PROBATE" in upper:
         return "probate", doc_type.title()
     return "other", doc_type.title()
-
-
-async def screenshot(page, name: str) -> None:
-    try:
-        SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
-        path = SCREENSHOT_DIR / f"{name}.png"
-        await page.screenshot(path=str(path), full_page=True)
-        log.info("Screenshot saved: %s", path.name)
-    except Exception as exc:
-        log.debug("Screenshot failed: %s", exc)
 
 
 # ---------------------------------------------------------------------------
@@ -138,189 +117,68 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
         )
         page = await context.new_page()
 
-        # Step 1: Load home page
-        log.info("Loading home page …")
-        await page.goto(RECORDER_BASE, timeout=60_000, wait_until="networkidle")
-        await page.wait_for_timeout(3000)
-        await screenshot(page, "01_home")
-        log.info("Home URL: %s", page.url)
+        # Step 1: Disclaimer — click Agree
+        log.info("Loading disclaimer …")
+        await page.goto(DISCLAIMER_PAGE, timeout=60_000, wait_until="networkidle")
+        await page.wait_for_timeout(2000)
 
-        # Log ALL text visible on page
-        body_text = await page.inner_text("body")
-        log.info("Home page text (first 500 chars): %s", body_text[:500].replace("\n", " "))
+        try:
+            await page.click("a:has-text('Agree')", timeout=5000)
+            await page.wait_for_load_state("networkidle", timeout=15000)
+            log.info("Agreed to disclaimer. URL: %s", page.url)
+        except Exception as e:
+            log.warning("Agree click failed: %s", e)
 
-        # Step 2: Look for any link/button that leads to document search
-        # Tyler home page usually has "Official Records" or "Recorded Documents" link
-        search_link_found = False
-        for link_text in [
-            "Official Records", "Recorded Documents", "Document Search",
-            "Search", "Records Search", "Land Records", "Search Records"
+        await page.wait_for_timeout(2000)
+
+        # Step 2: Click Civil
+        try:
+            await page.click("a:has-text('Civil')", timeout=5000)
+            await page.wait_for_load_state("networkidle", timeout=15000)
+            log.info("Clicked Civil. URL: %s", page.url)
+        except Exception as e:
+            log.warning("Civil click failed: %s", e)
+
+        await page.wait_for_timeout(2000)
+
+        # Step 3: Click search by date/document type
+        for txt in [
+            "Search By Judge / Date / Case Type / Document Type",
+            "Search By Judge",
+            "Document Type",
+            "Search By Date",
         ]:
             try:
-                await page.click(f"text={link_text}", timeout=3000)
+                await page.click(f"a:has-text('{txt}')", timeout=4000)
                 await page.wait_for_load_state("networkidle", timeout=15000)
-                await page.wait_for_timeout(2000)
-                log.info("Clicked '%s' → now at: %s", link_text, page.url)
-                await screenshot(page, f"02_after_{link_text.replace(' ','_')}")
-                search_link_found = True
+                log.info("Navigated via: %s | URL: %s", txt, page.url)
                 break
             except Exception:
                 pass
 
-        if not search_link_found:
-            log.info("No nav link found — going directly to search page")
-            await page.goto(
-                RECORDER_BASE + "search/DOCSEARCH236S2",
-                timeout=60_000,
-                wait_until="networkidle"
-            )
-            await page.wait_for_timeout(4000)
-            await screenshot(page, "02_search_direct")
+        await page.wait_for_timeout(2000)
 
-        log.info("After navigation, URL: %s", page.url)
-        body_text = await page.inner_text("body")
-        log.info("Page text (first 500): %s", body_text[:500].replace("\n", " "))
-
-        # Step 3: Wait for the date input fields to appear
-        log.info("Waiting for date inputs …")
-        try:
-            await page.wait_for_selector(
-                "input[type='text'], input[type='date']",
-                timeout=15000
-            )
-            log.info("Date inputs appeared!")
-        except Exception:
-            log.warning("No date inputs found after wait")
-
-        await screenshot(page, "03_before_fill")
-
-        # Log all inputs
+        # Log what's on the page
         all_inputs = await page.evaluate("""
-            Array.from(document.querySelectorAll('input')).map(i => ({
-                id: i.id, name: i.name, type: i.type,
-                placeholder: i.placeholder, value: i.value
+            Array.from(document.querySelectorAll('input,select')).map(el => ({
+                tag: el.tagName, id: el.id, name: el.name,
+                type: el.type || '', placeholder: el.placeholder || ''
             }))
         """)
-        log.info("All inputs: %s", all_inputs)
+        log.info("Form elements: %s", all_inputs)
 
-        # Log all clickable links
-        all_links = await page.evaluate("""
-            Array.from(document.querySelectorAll('a[href]')).map(a => ({
-                id: a.id, text: a.innerText.trim().substring(0,40),
-                href: a.href.substring(0,80)
-            }))
-        """)
-        log.info("All links: %s", all_links[:20])
-
-        # Step 4: Fill dates
-        log.info("Filling dates: %s → %s", date_from, date_to)
-        filled_from = False
-        filled_to   = False
-
-        for inp in all_inputs:
-            inp_id   = (inp.get("id") or "").lower()
-            inp_name = (inp.get("name") or "").lower()
-            inp_ph   = (inp.get("placeholder") or "").lower()
-
-            is_from = any(x in inp_id + inp_name + inp_ph
-                          for x in ["from", "start", "begin", "datefrom"])
-            is_to   = any(x in inp_id + inp_name + inp_ph
-                          for x in ["to", "end", "dateto", "through"])
-
-            sel = f"#{inp['id']}" if inp.get("id") else f"input[name='{inp.get('name')}']"
-
-            if is_from and not filled_from:
-                try:
-                    await page.fill(sel, date_from, timeout=3000)
-                    await page.press(sel, "Tab")
-                    filled_from = True
-                    log.info("Filled FROM via %s", sel)
-                except Exception as e:
-                    log.debug("Fill FROM failed %s: %s", sel, e)
-
-            elif is_to and not filled_to:
-                try:
-                    await page.fill(sel, date_to, timeout=3000)
-                    await page.press(sel, "Tab")
-                    filled_to = True
-                    log.info("Filled TO via %s", sel)
-                except Exception as e:
-                    log.debug("Fill TO failed %s: %s", sel, e)
-
-        await screenshot(page, "04_after_fill")
-
-        # Step 5: Click search using all known IDs/hrefs
-        log.info("Attempting search click …")
-        clicked = False
-        for lnk in all_links:
-            href = lnk.get("href", "")
-            lid  = lnk.get("id", "")
-            if "searchButton" in lid or "searchResults" in href or "DOCSEARCH" in href:
-                try:
-                    if lid:
-                        await page.click(f"#{lid}", timeout=5000)
-                    else:
-                        await page.click(f"a[href*='searchResults']", timeout=5000)
-                    await page.wait_for_load_state("networkidle", timeout=30000)
-                    await page.wait_for_timeout(3000)
-                    clicked = True
-                    log.info("Clicked search link: %s", lnk)
-                    break
-                except Exception as e:
-                    log.debug("Click failed: %s", e)
-
-        if not clicked:
-            # Try keyboard enter
+        # Step 4: For each target document type, fill form and collect results
+        for doc_type_name, (cat, cat_label) in TARGET_DOC_TYPES.items():
+            log.info("Searching for: %s", doc_type_name)
             try:
-                await page.keyboard.press("Enter")
-                await page.wait_for_load_state("networkidle", timeout=15000)
-                clicked = True
-                log.info("Submitted via Enter key")
-            except Exception:
-                pass
-
-        await page.wait_for_timeout(3000)
-        await screenshot(page, "05_results")
-        log.info("Results URL: %s", page.url)
-
-        html = await page.content()
-        result_match = re.search(r"(\d[\d,]+)\s+Total\s+Results", html, re.I)
-        if result_match:
-            log.info("Total results on page: %s", result_match.group(1))
-        else:
-            log.info("No 'Total Results' text found on page")
-            body = await page.inner_text("body")
-            log.info("Results page text (first 500): %s", body[:500].replace("\n", " "))
-
-        # Step 6: Parse and collect
-        soup = BeautifulSoup(html, "lxml")
-        left_panel = _extract_left_panel(soup, page.url)
-        log.info("Left panel types: %d → %s", len(left_panel), list(left_panel.keys())[:10])
-
-        if left_panel:
-            for type_name, href in left_panel.items():
-                upper = type_name.upper()
-                is_target = (
-                    any(key in upper for key in TARGET_DOC_TYPES) or
-                    any(upper in key for key in TARGET_DOC_TYPES)
+                type_records = await _search_one_type(
+                    page, date_from, date_to, doc_type_name, cat, cat_label
                 )
-                if not is_target:
-                    continue
-                log.info("Collecting: %s", type_name)
-                try:
-                    type_records = await _collect_type(page, href, type_name)
-                    records.extend(type_records)
-                    log.info("  → %d records", len(type_records))
-                except Exception as exc:
-                    log.warning("Failed %s: %s", type_name, exc)
-                await asyncio.sleep(2)
-        else:
-            all_recs = await _collect_all_pages(page)
-            log.info("All results parsed: %d", len(all_recs))
-            for rec in all_recs:
-                cat, _ = categorize(rec.get("doc_type", ""))
-                if cat != "other":
-                    records.append(rec)
+                records.extend(type_records)
+                log.info("  → %d records for %s", len(type_records), doc_type_name)
+            except Exception as exc:
+                log.warning("Failed %s: %s", doc_type_name, exc)
+            await asyncio.sleep(2)
 
         await browser.close()
 
@@ -328,42 +186,85 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
     return records
 
 
-def _extract_left_panel(soup: BeautifulSoup, base_url: str) -> dict[str, str]:
-    links: dict[str, str] = {}
-    for a in soup.select("ul li a, div.filter a, aside a, .facet a, nav a"):
-        text = re.sub(r"\s*\d+\s*$", "", a.get_text(strip=True)).strip().upper()
-        href = a.get("href", "")
-        if text and href and len(text) > 2:
-            links[text] = urljoin(base_url, href)
-    return links
-
-
-async def _collect_type(page, href: str, type_name: str) -> list[dict]:
-    if href.startswith("http"):
-        await page.goto(href, timeout=30000, wait_until="networkidle")
-    else:
-        try:
-            await page.click(f"text={type_name.title()}", timeout=5000)
-            await page.wait_for_load_state("networkidle", timeout=20000)
-        except Exception as exc:
-            log.warning("Could not navigate to %s: %s", type_name, exc)
-            return []
-    await page.wait_for_timeout(2000)
-    return await _collect_all_pages(page, doc_type_hint=type_name)
-
-
-async def _collect_all_pages(page, doc_type_hint: str = "") -> list[dict]:
+async def _search_one_type(
+    page, date_from: str, date_to: str,
+    doc_type_name: str, cat: str, cat_label: str
+) -> list[dict]:
     records: list[dict] = []
+
+    # Fill Case Filing Date
+    for sel in [
+        "input[name*='Date']", "input[id*='Date']",
+        "input[name*='Filing']", "input[name*='CaseDate']",
+        "input[type='text']:first-of-type",
+    ]:
+        try:
+            await page.fill(sel, date_from, timeout=3000)
+            log.debug("Filled date via %s", sel)
+            break
+        except Exception:
+            pass
+
+    # Select Document Type from dropdown
+    for sel in [
+        "select[name*='Doc']", "select[id*='Doc']",
+        "select[name*='Type']", "select[id*='Type']",
+        "select",
+    ]:
+        try:
+            # Try exact label first, then partial match
+            await page.select_option(sel, label=doc_type_name, timeout=3000)
+            log.debug("Selected doc type via label: %s", doc_type_name)
+            break
+        except Exception:
+            try:
+                # Try selecting by partial text
+                options = await page.evaluate(f"""
+                    Array.from(document.querySelector('{sel}').options)
+                    .map(o => ({{value: o.value, text: o.text}}))
+                """)
+                match = next(
+                    (o for o in options
+                     if doc_type_name.lower() in o['text'].lower() or
+                        o['text'].lower() in doc_type_name.lower()),
+                    None
+                )
+                if match:
+                    await page.select_option(sel, value=match['value'], timeout=3000)
+                    log.debug("Selected doc type via value: %s", match['text'])
+                    break
+            except Exception:
+                pass
+
+    # Click Search
+    for sel in [
+        "input[value='Search']", "button:has-text('Search')",
+        "input[type='submit']", "button[type='submit']",
+        "a:has-text('Search')",
+    ]:
+        try:
+            await page.click(sel, timeout=5000)
+            await page.wait_for_load_state("networkidle", timeout=30000)
+            log.debug("Search submitted")
+            break
+        except Exception:
+            pass
+
+    await page.wait_for_timeout(2000)
+
+    # Collect paginated results
     page_num = 0
     while True:
         page_num += 1
         html = await page.content()
-        page_records = parse_tyler_html(html, doc_type_hint)
+        page_records = parse_results_html(html, cat, cat_label, page.url)
         records.extend(page_records)
         log.debug("  Page %d: %d records", page_num, len(page_records))
 
+        # Next page
         next_btn = page.locator(
-            "a#nextButton, a:has-text('Next'), .next > a, li.next > a"
+            "a:has-text('Next'), input[value='Next'], "
+            "a[title*='next'], .next > a"
         ).first
         try:
             visible = await next_btn.is_visible(timeout=2000)
@@ -374,197 +275,104 @@ async def _collect_all_pages(page, doc_type_hint: str = "") -> list[dict]:
             await page.wait_for_timeout(1500)
         except Exception:
             break
-        if page_num > 100:
+
+        if page_num > 50:
             break
+
+    # Go back to search form for next type
+    try:
+        await page.go_back()
+        await page.wait_for_load_state("networkidle", timeout=10000)
+        await page.wait_for_timeout(1000)
+    except Exception:
+        pass
+
     return records
 
 
-def parse_tyler_html(html: str, doc_type_hint: str = "") -> list[dict]:
+def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> list[dict]:
     soup = BeautifulSoup(html, "lxml")
     records: list[dict] = []
 
-    containers = []
-    for sel in [
-        "li.ss-listview-internal", "li[class*='result']",
-        "div.document-item", "div[class*='document']", "tbody tr",
-    ]:
-        found = soup.select(sel)
-        if found:
-            containers = found
-            break
+    for table in soup.find_all("table"):
+        rows = table.find_all("tr")
+        if len(rows) < 2:
+            continue
 
-    if not containers:
-        containers = [
-            el for el in soup.find_all(["li", "div"])
-            if re.search(r"\b\d{7,10}\s*[•·]\s*[A-Z]", el.get_text(" ", strip=True))
+        headers = [
+            th.get_text(" ", strip=True).lower()
+            for th in rows[0].find_all(["th", "td"])
         ]
+        if not any(h in headers for h in
+                   ["case", "name", "date", "filed", "doc", "party", "type"]):
+            continue
 
-    for c in containers:
-        try:
-            rec = _parse_tyler_card(c, doc_type_hint)
-            if rec:
-                records.append(rec)
-        except Exception as exc:
-            log.debug("Card error: %s", exc)
+        def ci(*candidates):
+            for c in candidates:
+                for i, h in enumerate(headers):
+                    if c in h:
+                        return i
+            return -1
 
-    if not records:
-        for table in soup.find_all("table"):
-            rows = table.find_all("tr")
-            if len(rows) < 2:
+        def cell(row, i):
+            cells = row.find_all(["td", "th"])
+            if i < 0 or i >= len(cells):
+                return ""
+            return cells[i].get_text(" ", strip=True)
+
+        i_case    = ci("case", "number", "no")
+        i_date    = ci("date", "filed")
+        i_party1  = ci("plaintiff", "grantor", "name", "party")
+        i_party2  = ci("defendant", "grantee")
+        i_type    = ci("type", "doc", "description")
+        i_amount  = ci("amount", "debt", "judgment")
+
+        for row in rows[1:]:
+            cells = row.find_all(["td", "th"])
+            if not cells:
                 continue
-            headers = [
-                th.get_text(" ", strip=True).lower()
-                for th in rows[0].find_all(["th", "td"])
-            ]
-            if not any(h in headers for h in ["doc", "grantor", "recording"]):
-                continue
-            for row in rows[1:]:
-                rec = _parse_table_row(row, headers, doc_type_hint)
-                if rec:
-                    records.append(rec)
+            try:
+                case_num = cell(row, i_case) or cell(row, 0)
+                if not case_num or not re.search(r"\w{3,}", case_num):
+                    continue
+
+                doc_type_raw = cell(row, i_type) or cat_label
+                filed        = parse_date(cell(row, i_date))
+                party1       = normalize(cell(row, i_party1))
+                party2       = normalize(cell(row, i_party2))
+                amount       = safe_float(cell(row, i_amount))
+
+                # URL
+                clerk_url = base_url
+                link_cell = cells[max(i_case, 0)] if i_case < len(cells) else cells[0]
+                anchor = link_cell.find("a", href=True)
+                if anchor:
+                    clerk_url = urljoin(base_url, anchor["href"])
+
+                records.append({
+                    "doc_num":      case_num.strip(),
+                    "doc_type":     normalize(doc_type_raw),
+                    "filed":        filed,
+                    "cat":          cat,
+                    "cat_label":    cat_label,
+                    "owner":        party1,
+                    "grantee":      party2,
+                    "amount":       amount,
+                    "legal":        "",
+                    "clerk_url":    clerk_url,
+                    "prop_address": "",
+                    "prop_city":    "Summit County",
+                    "prop_state":   "OH",
+                    "prop_zip":     "",
+                    "mail_address": "",
+                    "mail_city":    "",
+                    "mail_state":   "",
+                    "mail_zip":     "",
+                })
+            except Exception as exc:
+                log.debug("Row parse error: %s", exc)
 
     return records
-
-
-def _parse_tyler_card(container, doc_type_hint: str) -> Optional[dict]:
-    text = container.get_text(" ", strip=True)
-    if not text or len(text) < 10:
-        return None
-
-    m = re.search(
-        r"(\d{7,10})\s*[•·\-]\s*([A-Z][A-Z\s/&]+?)(?:\s{2,}|\n|Recording|$)", text
-    )
-    if m:
-        doc_num = m.group(1)
-        doc_type_raw = m.group(2).strip()
-    else:
-        nm = re.search(r"(\d{7,10})", text)
-        doc_num = nm.group(1) if nm else ""
-        doc_type_raw = doc_type_hint
-
-    if not doc_num:
-        return None
-
-    dm = re.search(r"(\d{1,2}/\d{1,2}/\d{4})", text)
-    filed = parse_date(dm.group(1)) if dm else ""
-
-    grantor = ""
-    gm = re.search(
-        r"Grantor[^:]*[:\s]+(.*?)(?:Grantee|Legal|Recording|\n\n|$)", text, re.I | re.S
-    )
-    if gm:
-        grantor = normalize(re.sub(r"\s+", " ", gm.group(1))[:80])
-
-    grantee = ""
-    gem = re.search(
-        r"Grantee[^:]*[:\s]+(.*?)(?:Legal|Recording|Parcel|\n\n|$)", text, re.I | re.S
-    )
-    if gem:
-        grantee = normalize(re.sub(r"\s+", " ", gem.group(1))[:80])
-
-    legal = ""
-    lm = re.search(r"(Parcel[:\s]+[\d-]+)", text, re.I)
-    if lm:
-        legal = lm.group(1)
-
-    amount = None
-    am = re.search(r"\$[\d,]+(?:\.\d{2})?", text)
-    if am:
-        amount = safe_float(am.group(0))
-
-    clerk_url = RECORDER_BASE
-    a = container.find("a", href=True)
-    if a:
-        clerk_url = urljoin(RECORDER_BASE, a["href"])
-    elif doc_num:
-        clerk_url = f"{RECORDER_BASE}document/{doc_num}"
-
-    cat, cat_label = categorize(doc_type_raw or doc_type_hint)
-    if cat == "other" and not doc_type_hint:
-        return None
-
-    return {
-        "doc_num":      doc_num,
-        "doc_type":     normalize(doc_type_raw or doc_type_hint),
-        "filed":        filed,
-        "cat":          cat,
-        "cat_label":    cat_label,
-        "owner":        grantor,
-        "grantee":      grantee,
-        "amount":       amount,
-        "legal":        legal,
-        "clerk_url":    clerk_url,
-        "prop_address": "",
-        "prop_city":    "Summit County",
-        "prop_state":   "OH",
-        "prop_zip":     "",
-        "mail_address": "",
-        "mail_city":    "",
-        "mail_state":   "",
-        "mail_zip":     "",
-    }
-
-
-def _parse_table_row(row, headers, doc_type_hint):
-    cells = row.find_all(["td", "th"])
-    if not cells:
-        return None
-
-    def ci(*candidates):
-        for c in candidates:
-            for i, h in enumerate(headers):
-                if c in h:
-                    return i
-        return -1
-
-    def cell(i):
-        if i < 0 or i >= len(cells):
-            return ""
-        return cells[i].get_text(" ", strip=True)
-
-    i_doc     = ci("doc", "number", "instrument")
-    i_type    = ci("type", "description")
-    i_date    = ci("recording", "filed", "date")
-    i_grantor = ci("grantor", "owner", "from")
-    i_grantee = ci("grantee", "to")
-    i_legal   = ci("legal", "parcel")
-    i_amount  = ci("amount", "consideration")
-
-    doc_num = cell(i_doc) or cell(0)
-    if not doc_num or not re.search(r"\d{5,}", doc_num):
-        return None
-
-    doc_type_raw = cell(i_type) or doc_type_hint
-    cat, cat_label = categorize(doc_type_raw)
-    if cat == "other" and not doc_type_hint:
-        return None
-
-    clerk_url = RECORDER_BASE
-    lc = cells[max(i_doc, 0)] if i_doc < len(cells) else cells[0]
-    anc = lc.find("a", href=True)
-    if anc:
-        clerk_url = urljoin(RECORDER_BASE, anc["href"])
-
-    return {
-        "doc_num":      doc_num.strip(),
-        "doc_type":     normalize(doc_type_raw),
-        "filed":        parse_date(cell(i_date)),
-        "cat":          cat,
-        "cat_label":    cat_label,
-        "owner":        normalize(cell(i_grantor)),
-        "grantee":      normalize(cell(i_grantee)),
-        "amount":       safe_float(cell(i_amount)),
-        "legal":        cell(i_legal),
-        "clerk_url":    clerk_url,
-        "prop_address": "",
-        "prop_city":    "Summit County",
-        "prop_state":   "OH",
-        "prop_zip":     "",
-        "mail_address": "",
-        "mail_city":    "",
-        "mail_state":   "",
-        "mail_zip":     "",
-    }
 
 
 # ---------------------------------------------------------------------------
@@ -581,9 +389,7 @@ def score_record(rec: dict, all_records: list[dict]) -> tuple[int, list[str]]:
     filed  = rec.get("filed", "")
 
     if cat == "foreclosure":
-        flags.append("Lis pendens" if "PENDENS" in dtype else "Pre-foreclosure")
-        if "SHERIFF" in dtype:
-            flags.append("Sheriff sale")
+        flags.append("Pre-foreclosure")
         score += 10
 
     if cat == "judgment":
@@ -591,12 +397,10 @@ def score_record(rec: dict, all_records: list[dict]) -> tuple[int, list[str]]:
         score += 10
 
     if cat == "lien":
-        if any(x in dtype for x in ("FEDERAL", "STATE", "TAX", "ASSESSMENT", "DELINQUENT")):
+        if any(x in dtype for x in ("STATE", "TAX", "DELINQUENT")):
             flags.append("Tax lien")
         elif "MECHANIC" in dtype:
             flags.append("Mechanic lien")
-        elif "CHILD" in dtype:
-            flags.append("Child support lien")
         else:
             flags.append("Lien")
         score += 10
@@ -605,10 +409,14 @@ def score_record(rec: dict, all_records: list[dict]) -> tuple[int, list[str]]:
         flags.append("Probate / estate")
         score += 10
 
+    if cat == "bankruptcy":
+        flags.append("Bankruptcy filed")
+        score += 10
+
     owner_docs = [r for r in all_records if r.get("owner") == owner and r is not rec]
-    has_lp = any("PENDENS" in r.get("doc_type", "") for r in owner_docs) or "PENDENS" in dtype
     has_fc = any(r.get("cat") == "foreclosure" for r in owner_docs)
-    if has_lp and has_fc:
+    has_lien = any(r.get("cat") == "lien" for r in owner_docs)
+    if has_fc and has_lien:
         score += 20
 
     if amount:
@@ -664,7 +472,7 @@ def _split_name(full: str) -> tuple[str, str]:
 def write_outputs(records, fetched_at, start_date, end_date):
     payload = {
         "fetched_at":   fetched_at,
-        "source":       "Summit County Fiscal Office – Recording Division",
+        "source":       "Summit County Clerk of Courts – Civil Division",
         "date_range":   {
             "from": start_date.strftime("%Y-%m-%d"),
             "to":   end_date.strftime("%Y-%m-%d"),
@@ -705,7 +513,7 @@ def write_outputs(records, fetched_at, start_date, end_date):
                 "Amount/Debt Owed":       rec.get("amount", ""),
                 "Seller Score":           rec.get("score", 0),
                 "Motivated Seller Flags": "; ".join(rec.get("flags", [])),
-                "Source":                 "Summit County Fiscal Office – Recording Division",
+                "Source":                 "Summit County Clerk of Courts – Civil Division",
                 "Public Records URL":     rec.get("clerk_url", ""),
             })
     log.info("Wrote GHL CSV: %s", GHL_CSV)
