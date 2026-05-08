@@ -1,7 +1,6 @@
 """
 Summit County, Ohio – Motivated Seller Lead Scraper
 Targets: clerk.summitoh.net/PublicSite/SearchByMixed.aspx
-Field IDs and dropdown values confirmed from live inspection.
 """
 
 from __future__ import annotations
@@ -27,18 +26,17 @@ CLERK_BASE      = "https://clerk.summitoh.net/PublicSite/"
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "7"))
 
 TARGET_DOC_TYPES = {
-    "DECREE OF FORECLOSURE.":                          ("foreclosure", "Decree of Foreclosure"),
-    "FORECLOSURE COMPLAINT":                           ("foreclosure", "Foreclosure Complaint"),
+    "DECREE OF FORECLOSURE.":                                ("foreclosure", "Decree of Foreclosure"),
+    "FORECLOSURE COMPLAINT":                                 ("foreclosure", "Foreclosure Complaint"),
     "CLERK'S CERTIFICATE FOR PENDING SUITE FOR LIS PENDENS": ("foreclosure", "Lis Pendens"),
-    "DELINQUENT TAX SHERIFF'S RETURN":                ("lien",        "Delinquent Tax Lien"),
-    "STATE TAX LIEN FILED.":                          ("lien",        "State Tax Lien Filed"),
-    "MECHANIC'S LIEN RELEASE BOND":                   ("lien",        "Mechanic's Lien Release Bond"),
-    "AKRON MUNI CERT. OF JUDGMENT LIEN FILED":        ("judgment",    "Certificate of Judgment Lien"),
-    "BARBERTON MUNI CERT. OF JUDGMENT LIEN FILED":    ("judgment",    "Certificate of Judgment Lien"),
-    "CUYA. FALLS MUNI CERT. OF JUDGMENT LIEN FILED":  ("judgment",    "Certificate of Judgment Lien"),
-    "NOTICE OF FILING DEATH CERTIFICATE":             ("probate",     "Notice of Filing Death Certificate"),
+    "DELINQUENT TAX SHERIFF'S RETURN":                       ("lien",        "Delinquent Tax Lien"),
+    "STATE TAX LIEN FILED.":                                 ("lien",        "State Tax Lien Filed"),
+    "MECHANIC'S LIEN RELEASE BOND":                          ("lien",        "Mechanic's Lien Release Bond"),
+    "AKRON MUNI CERT. OF JUDGMENT LIEN FILED":               ("judgment",    "Certificate of Judgment Lien"),
+    "BARBERTON MUNI CERT. OF JUDGMENT LIEN FILED":           ("judgment",    "Certificate of Judgment Lien"),
+    "CUYA. FALLS MUNI CERT. OF JUDGMENT LIEN FILED":         ("judgment",    "Certificate of Judgment Lien"),
+    "NOTICE OF FILING DEATH CERTIFICATE":                    ("probate",     "Notice of Filing Death Certificate"),
 }
-That's the only change needed — just that dict. Commit and run!Sonnet 4.6
 
 REPO_ROOT      = Path(__file__).resolve().parent.parent
 DASHBOARD_JSON = REPO_ROOT / "dashboard" / "records.json"
@@ -161,21 +159,16 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
 
         await page.wait_for_timeout(2000)
 
-        # Read actual dropdown options from live page
+        # Read dropdown options
         dropdown_options = await page.evaluate("""
             Array.from(document.querySelector('#ContentPlaceHolder1_drpDocType').options)
             .map(o => ({value: o.value, text: o.text.trim().toUpperCase()}))
         """)
 
-        # Log ALL options so we can see exact names
-        log.info("Dropdown has %d options", len(dropdown_options))
-        for opt in dropdown_options:
-            log.info("OPTION: '%s'", opt['text'])
-
-        # Build lookup: uppercase text -> value
         option_lookup = {opt['text']: opt['value'] for opt in dropdown_options}
+        log.info("Dropdown has %d options", len(dropdown_options))
 
-        # Step 4: Search each target type using exact match
+        # Step 4: Search each target type
         for doc_type_key, (cat, cat_label) in TARGET_DOC_TYPES.items():
             opt_value = option_lookup.get(doc_type_key.upper())
             if not opt_value:
@@ -206,7 +199,7 @@ async def _search_one_type(
 ) -> list[dict]:
     records: list[dict] = []
 
-    # Always navigate fresh to search form to avoid stale state
+    # Always navigate fresh to search form
     await page.goto(SEARCH_URL, timeout=30000, wait_until="networkidle")
     await page.wait_for_timeout(2000)
     await page.wait_for_selector(DATE_FIELD, timeout=10000)
@@ -214,14 +207,12 @@ async def _search_one_type(
     # Fill date
     try:
         await page.fill(DATE_FIELD, date_from, timeout=5000)
-        log.debug("Filled date: %s", date_from)
     except Exception as e:
         log.warning("Date fill failed: %s", e)
 
-    # Select doc type by exact value
+    # Select doc type
     try:
         await page.select_option(DOC_DROPDOWN, value=opt_value, timeout=5000)
-        log.debug("Selected: %s", doc_type_label)
     except Exception as e:
         log.warning("Select failed: %s", e)
 
