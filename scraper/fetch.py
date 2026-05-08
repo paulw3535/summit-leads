@@ -267,9 +267,10 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
             th.get_text(" ", strip=True).lower()
             for th in rows[0].find_all(["th", "td"])
         ]
+
         if not any(h in headers for h in
-                   ["case", "name", "date", "filed", "doc",
-                    "party", "type", "plaintiff", "number"]):
+                   ["case", "filing", "caption", "number",
+                    "date", "plaintiff", "name", "party"]):
             continue
 
         log.info("Results table headers: %s", headers)
@@ -281,12 +282,10 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
                         return i
             return -1
 
-        i_case   = ci("case", "number", "no")
-        i_date   = ci("date", "filed")
-        i_party1 = ci("plaintiff", "grantor", "name", "party")
-        i_party2 = ci("defendant", "grantee")
-        i_type   = ci("type", "doc", "description")
-        i_amount = ci("amount", "debt", "judgment")
+        i_case    = ci("case number", "case no", "case", "number")
+        i_date    = ci("filing date", "date", "filed")
+        i_caption = ci("case caption", "caption", "plaintiff", "name", "party")
+        i_amount  = ci("amount", "debt", "judgment")
 
         for row in rows[1:]:
             cells = row.find_all(["td", "th"])
@@ -302,14 +301,27 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
                 case_num = cell(i_case) or cell(0)
                 if not case_num or not re.search(r"\w{3,}", case_num):
                     continue
-                if case_num.lower() in ("case number", "case no", "number", "no."):
+                if case_num.lower() in (
+                    "case number", "case no", "number", "no.",
+                    "filing date", "case caption", "caption"
+                ):
                     continue
 
-                filed        = parse_date(cell(i_date))
-                party1       = normalize(cell(i_party1))
-                party2       = normalize(cell(i_party2))
-                amount       = safe_float(cell(i_amount))
-                doc_type_raw = cell(i_type) or cat_label
+                filed   = parse_date(cell(i_date))
+                caption = normalize(cell(i_caption))
+                amount  = safe_float(cell(i_amount))
+
+                # Split caption into owner vs grantee
+                owner   = caption
+                grantee = ""
+                if " VS " in caption:
+                    parts   = caption.split(" VS ", 1)
+                    owner   = parts[0].strip()
+                    grantee = parts[1].strip()
+                elif " V " in caption:
+                    parts   = caption.split(" V ", 1)
+                    owner   = parts[0].strip()
+                    grantee = parts[1].strip()
 
                 clerk_url = base_url
                 lc = cells[max(i_case, 0)] if i_case < len(cells) else cells[0]
@@ -319,12 +331,12 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
 
                 records.append({
                     "doc_num":      case_num.strip(),
-                    "doc_type":     normalize(doc_type_raw),
+                    "doc_type":     normalize(cat_label),
                     "filed":        filed,
                     "cat":          cat,
                     "cat_label":    cat_label,
-                    "owner":        party1,
-                    "grantee":      party2,
+                    "owner":        owner,
+                    "grantee":      grantee,
                     "amount":       amount,
                     "legal":        "",
                     "clerk_url":    clerk_url,
