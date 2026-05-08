@@ -1,6 +1,6 @@
 """
 Summit County, Ohio – Motivated Seller Lead Scraper
-Tyler Self-Service: summitcountyoh-web.tylerhost.net
+Tyler Self-Service jQuery Mobile app — screenshot debugging enabled
 """
 
 from __future__ import annotations
@@ -19,9 +19,7 @@ from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
-RECORDER_BASE  = "https://summitcountyoh-web.tylerhost.net/web/"
-SEARCH_PAGE    = "https://summitcountyoh-web.tylerhost.net/web/search/DOCSEARCH236S2"
-RESULTS_PAGE   = "https://summitcountyoh-web.tylerhost.net/web/searchResults/DOCSEARCH236S2"
+RECORDER_BASE = "https://summitcountyoh-web.tylerhost.net/web/"
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "7"))
 
@@ -49,6 +47,7 @@ REPO_ROOT      = Path(__file__).resolve().parent.parent
 DASHBOARD_JSON = REPO_ROOT / "dashboard" / "records.json"
 DATA_JSON      = REPO_ROOT / "data"      / "records.json"
 GHL_CSV        = REPO_ROOT / "data"      / "ghl_export.csv"
+SCREENSHOT_DIR = REPO_ROOT / "dashboard" / "debug"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -105,6 +104,16 @@ def categorize(doc_type: str) -> tuple[str, str]:
     return "other", doc_type.title()
 
 
+async def screenshot(page, name: str) -> None:
+    try:
+        SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
+        path = SCREENSHOT_DIR / f"{name}.png"
+        await page.screenshot(path=str(path), full_page=True)
+        log.info("Screenshot saved: %s", path.name)
+    except Exception as exc:
+        log.debug("Screenshot failed: %s", exc)
+
+
 # ---------------------------------------------------------------------------
 # Playwright scraper
 # ---------------------------------------------------------------------------
@@ -125,97 +134,168 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
                 "AppleWebKit/537.36 (KHTML, like Gecko) "
                 "Chrome/120.0.0.0 Safari/537.36"
             ),
-            viewport={"width": 1280, "height": 800},
+            viewport={"width": 1280, "height": 900},
         )
         page = await context.new_page()
 
-        # Step 1: Load the home page to establish session
-        log.info("Establishing session …")
+        # Step 1: Load home page
+        log.info("Loading home page …")
         await page.goto(RECORDER_BASE, timeout=60_000, wait_until="networkidle")
-        await page.wait_for_timeout(2000)
-
-        # Step 2: Navigate to the search form
-        log.info("Loading search form: %s", SEARCH_PAGE)
-        await page.goto(SEARCH_PAGE, timeout=60_000, wait_until="networkidle")
-        await page.wait_for_timeout(2000)
-
-        # Log what's on the page for debugging
-        html = await page.content()
-        soup = BeautifulSoup(html, "lxml")
-        inputs = [i.get("id", i.get("name", "?")) for i in soup.find_all("input")]
-        links  = [(a.get("id","?"), a.get("href","?")) for a in soup.find_all("a", href=True)]
-        log.info("Inputs on page: %s", inputs[:10])
-        log.info("Links on page: %s", links[:10])
-
-        # Step 3: Fill date fields using JavaScript (most reliable for jQuery Mobile)
-        log.info("Setting dates via JS: %s → %s", date_from, date_to)
-        await page.evaluate(f"""
-            (function() {{
-                var inputs = document.querySelectorAll('input[type="text"], input[type="date"]');
-                console.log('Found inputs:', inputs.length);
-                inputs.forEach(function(inp) {{
-                    var id = (inp.id || '').toLowerCase();
-                    var name = (inp.name || '').toLowerCase();
-                    if (id.includes('from') || name.includes('from') || id.includes('start')) {{
-                        inp.value = '{date_from}';
-                        inp.dispatchEvent(new Event('change', {{bubbles: true}}));
-                        inp.dispatchEvent(new Event('input', {{bubbles: true}}));
-                    }}
-                    if (id.includes('to') || name.includes('to') || id.includes('end')) {{
-                        inp.value = '{date_to}';
-                        inp.dispatchEvent(new Event('change', {{bubbles: true}}));
-                        inp.dispatchEvent(new Event('input', {{bubbles: true}}));
-                    }}
-                }});
-            }})();
-        """)
-        await page.wait_for_timeout(1000)
-
-        # Step 4: Click searchButton by ID using JavaScript
-        log.info("Clicking search button via JS …")
-        clicked = await page.evaluate("""
-            (function() {
-                var btn = document.getElementById('searchButton');
-                if (btn) { btn.click(); return 'clicked searchButton'; }
-                var btns = document.querySelectorAll('a[href*="searchResults"], a[href*="DOCSEARCH"]');
-                if (btns.length > 0) { btns[0].click(); return 'clicked href match'; }
-                return 'no button found';
-            })();
-        """)
-        log.info("Click result: %s", clicked)
-        await page.wait_for_load_state("networkidle", timeout=30000)
         await page.wait_for_timeout(3000)
+        await screenshot(page, "01_home")
+        log.info("Home URL: %s", page.url)
 
-        current_url = page.url
-        log.info("After search, URL: %s", current_url)
+        # Log ALL text visible on page
+        body_text = await page.inner_text("body")
+        log.info("Home page text (first 500 chars): %s", body_text[:500].replace("\n", " "))
 
-        # Step 5: If still on search page, try Playwright click
-        if "search/" in current_url and "searchResults" not in current_url:
-            log.warning("JS click didn't navigate, trying Playwright click")
-            for sel in ["#searchButton", "a#searchButton", "a[href*='searchResults']"]:
+        # Step 2: Look for any link/button that leads to document search
+        # Tyler home page usually has "Official Records" or "Recorded Documents" link
+        search_link_found = False
+        for link_text in [
+            "Official Records", "Recorded Documents", "Document Search",
+            "Search", "Records Search", "Land Records", "Search Records"
+        ]:
+            try:
+                await page.click(f"text={link_text}", timeout=3000)
+                await page.wait_for_load_state("networkidle", timeout=15000)
+                await page.wait_for_timeout(2000)
+                log.info("Clicked '%s' → now at: %s", link_text, page.url)
+                await screenshot(page, f"02_after_{link_text.replace(' ','_')}")
+                search_link_found = True
+                break
+            except Exception:
+                pass
+
+        if not search_link_found:
+            log.info("No nav link found — going directly to search page")
+            await page.goto(
+                RECORDER_BASE + "search/DOCSEARCH236S2",
+                timeout=60_000,
+                wait_until="networkidle"
+            )
+            await page.wait_for_timeout(4000)
+            await screenshot(page, "02_search_direct")
+
+        log.info("After navigation, URL: %s", page.url)
+        body_text = await page.inner_text("body")
+        log.info("Page text (first 500): %s", body_text[:500].replace("\n", " "))
+
+        # Step 3: Wait for the date input fields to appear
+        log.info("Waiting for date inputs …")
+        try:
+            await page.wait_for_selector(
+                "input[type='text'], input[type='date']",
+                timeout=15000
+            )
+            log.info("Date inputs appeared!")
+        except Exception:
+            log.warning("No date inputs found after wait")
+
+        await screenshot(page, "03_before_fill")
+
+        # Log all inputs
+        all_inputs = await page.evaluate("""
+            Array.from(document.querySelectorAll('input')).map(i => ({
+                id: i.id, name: i.name, type: i.type,
+                placeholder: i.placeholder, value: i.value
+            }))
+        """)
+        log.info("All inputs: %s", all_inputs)
+
+        # Log all clickable links
+        all_links = await page.evaluate("""
+            Array.from(document.querySelectorAll('a[href]')).map(a => ({
+                id: a.id, text: a.innerText.trim().substring(0,40),
+                href: a.href.substring(0,80)
+            }))
+        """)
+        log.info("All links: %s", all_links[:20])
+
+        # Step 4: Fill dates
+        log.info("Filling dates: %s → %s", date_from, date_to)
+        filled_from = False
+        filled_to   = False
+
+        for inp in all_inputs:
+            inp_id   = (inp.get("id") or "").lower()
+            inp_name = (inp.get("name") or "").lower()
+            inp_ph   = (inp.get("placeholder") or "").lower()
+
+            is_from = any(x in inp_id + inp_name + inp_ph
+                          for x in ["from", "start", "begin", "datefrom"])
+            is_to   = any(x in inp_id + inp_name + inp_ph
+                          for x in ["to", "end", "dateto", "through"])
+
+            sel = f"#{inp['id']}" if inp.get("id") else f"input[name='{inp.get('name')}']"
+
+            if is_from and not filled_from:
                 try:
-                    await page.click(sel, timeout=5000)
-                    await page.wait_for_load_state("networkidle", timeout=20000)
-                    log.info("Playwright click worked: %s", sel)
+                    await page.fill(sel, date_from, timeout=3000)
+                    await page.press(sel, "Tab")
+                    filled_from = True
+                    log.info("Filled FROM via %s", sel)
+                except Exception as e:
+                    log.debug("Fill FROM failed %s: %s", sel, e)
+
+            elif is_to and not filled_to:
+                try:
+                    await page.fill(sel, date_to, timeout=3000)
+                    await page.press(sel, "Tab")
+                    filled_to = True
+                    log.info("Filled TO via %s", sel)
+                except Exception as e:
+                    log.debug("Fill TO failed %s: %s", sel, e)
+
+        await screenshot(page, "04_after_fill")
+
+        # Step 5: Click search using all known IDs/hrefs
+        log.info("Attempting search click …")
+        clicked = False
+        for lnk in all_links:
+            href = lnk.get("href", "")
+            lid  = lnk.get("id", "")
+            if "searchButton" in lid or "searchResults" in href or "DOCSEARCH" in href:
+                try:
+                    if lid:
+                        await page.click(f"#{lid}", timeout=5000)
+                    else:
+                        await page.click(f"a[href*='searchResults']", timeout=5000)
+                    await page.wait_for_load_state("networkidle", timeout=30000)
+                    await page.wait_for_timeout(3000)
+                    clicked = True
+                    log.info("Clicked search link: %s", lnk)
                     break
                 except Exception as e:
-                    log.debug("Playwright click failed %s: %s", sel, e)
-            await page.wait_for_timeout(2000)
+                    log.debug("Click failed: %s", e)
 
-        # Step 6: Parse results
-        current_url = page.url
-        log.info("Results URL: %s", current_url)
+        if not clicked:
+            # Try keyboard enter
+            try:
+                await page.keyboard.press("Enter")
+                await page.wait_for_load_state("networkidle", timeout=15000)
+                clicked = True
+                log.info("Submitted via Enter key")
+            except Exception:
+                pass
+
+        await page.wait_for_timeout(3000)
+        await screenshot(page, "05_results")
+        log.info("Results URL: %s", page.url)
+
         html = await page.content()
-
-        # Check how many results we got
-        result_match = re.search(r"(\d+)\s+Total\s+Results", html, re.I)
+        result_match = re.search(r"(\d[\d,]+)\s+Total\s+Results", html, re.I)
         if result_match:
-            log.info("Total results found: %s", result_match.group(1))
+            log.info("Total results on page: %s", result_match.group(1))
+        else:
+            log.info("No 'Total Results' text found on page")
+            body = await page.inner_text("body")
+            log.info("Results page text (first 500): %s", body[:500].replace("\n", " "))
 
-        # Extract left panel doc type filters
+        # Step 6: Parse and collect
         soup = BeautifulSoup(html, "lxml")
         left_panel = _extract_left_panel(soup, page.url)
-        log.info("Left panel types: %d", len(left_panel))
+        log.info("Left panel types: %d → %s", len(left_panel), list(left_panel.keys())[:10])
 
         if left_panel:
             for type_name, href in left_panel.items():
@@ -230,12 +310,11 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
                 try:
                     type_records = await _collect_type(page, href, type_name)
                     records.extend(type_records)
-                    log.info("  → %d records for %s", len(type_records), type_name)
+                    log.info("  → %d records", len(type_records))
                 except Exception as exc:
                     log.warning("Failed %s: %s", type_name, exc)
                 await asyncio.sleep(2)
         else:
-            log.info("No left panel — parsing all results and filtering")
             all_recs = await _collect_all_pages(page)
             log.info("All results parsed: %d", len(all_recs))
             for rec in all_recs:
@@ -276,7 +355,6 @@ async def _collect_type(page, href: str, type_name: str) -> list[dict]:
 async def _collect_all_pages(page, doc_type_hint: str = "") -> list[dict]:
     records: list[dict] = []
     page_num = 0
-
     while True:
         page_num += 1
         html = await page.content()
@@ -296,10 +374,8 @@ async def _collect_all_pages(page, doc_type_hint: str = "") -> list[dict]:
             await page.wait_for_timeout(1500)
         except Exception:
             break
-
         if page_num > 100:
             break
-
     return records
 
 
@@ -307,14 +383,10 @@ def parse_tyler_html(html: str, doc_type_hint: str = "") -> list[dict]:
     soup = BeautifulSoup(html, "lxml")
     records: list[dict] = []
 
-    # Tyler renders results as list items containing doc number • type
     containers = []
     for sel in [
-        "li.ss-listview-internal",
-        "li[class*='result']",
-        "div.document-item",
-        "div[class*='document']",
-        "tbody tr",
+        "li.ss-listview-internal", "li[class*='result']",
+        "div.document-item", "div[class*='document']", "tbody tr",
     ]:
         found = soup.select(sel)
         if found:
@@ -335,7 +407,6 @@ def parse_tyler_html(html: str, doc_type_hint: str = "") -> list[dict]:
         except Exception as exc:
             log.debug("Card error: %s", exc)
 
-    # Table fallback
     if not records:
         for table in soup.find_all("table"):
             rows = table.find_all("tr")
@@ -345,8 +416,7 @@ def parse_tyler_html(html: str, doc_type_hint: str = "") -> list[dict]:
                 th.get_text(" ", strip=True).lower()
                 for th in rows[0].find_all(["th", "td"])
             ]
-            if not any(h in headers for h in
-                       ["doc", "grantor", "recording", "instrument"]):
+            if not any(h in headers for h in ["doc", "grantor", "recording"]):
                 continue
             for row in rows[1:]:
                 rec = _parse_table_row(row, headers, doc_type_hint)
