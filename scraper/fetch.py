@@ -80,24 +80,6 @@ def normalize(s: str) -> str:
     return re.sub(r"\s+", " ", str(s).upper().strip())
 
 
-def categorize(doc_type: str) -> tuple[str, str]:
-    upper = doc_type.upper().strip()
-    for key, (cat, label) in TARGET_DOC_TYPES.items():
-        if key == upper:
-            return cat, label
-    if "LIEN" in upper:
-        return "lien", doc_type.title()
-    if "FORECLOS" in upper or "DECREE" in upper:
-        return "foreclosure", doc_type.title()
-    if "JUDGMENT" in upper or "CERTIFICATE" in upper:
-        return "judgment", doc_type.title()
-    if "BANKRUPTCY" in upper:
-        return "bankruptcy", doc_type.title()
-    if "DEATH" in upper or "PROBATE" in upper:
-        return "probate", doc_type.title()
-    return "other", doc_type.title()
-
-
 async def scrape(date_from: str, date_to: str) -> list[dict]:
     from playwright.async_api import async_playwright
 
@@ -206,22 +188,6 @@ async def _search_one_type(
         await page.click(SEARCH_BTN, timeout=5000)
         await page.wait_for_load_state("networkidle", timeout=30000)
         await page.wait_for_timeout(2000)
-        body_text = await page.inner_text("body")
-        log.info("Results (first 200): %s", body_text[:200].replace("\n", " "))
-
-        # Log all table headers to debug parsing
-        html_snippet = await page.content()
-        soup_debug = BeautifulSoup(html_snippet, "lxml")
-        for t in soup_debug.find_all("table"):
-            rows = t.find_all("tr")
-            if rows:
-                hdrs = [th.get_text(strip=True) for th in rows[0].find_all(["th", "td"])]
-                if hdrs:
-                    log.info("TABLE HEADERS FOUND: %s", hdrs)
-                    if len(rows) > 1:
-                        first_row = [td.get_text(strip=True) for td in rows[1].find_all(["td", "th"])]
-                        log.info("TABLE FIRST ROW: %s", first_row)
-
     except Exception as e:
         log.warning("Search click failed: %s", e)
         return records
@@ -256,110 +222,94 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
     soup = BeautifulSoup(html, "lxml")
     records: list[dict] = []
 
+    # Find the specific results table — it has exactly these 3 headers
+    results_table = None
     for table in soup.find_all("table"):
         rows = table.find_all("tr")
         if len(rows) < 2:
             continue
+        header_cells = rows[0].find_all(["th", "td"])
+        header_texts = [c.get_text(strip=True) for c in header_cells]
+        # Look for the exact data table
+        if (len(header_texts) >= 3 and
+            "Filing Date" in header_texts and
+            "Case Number" in header_texts and
+            "Case Caption" in header_texts):
+            results_table = table
+            log.info("Found results table with %d rows", len(rows))
+            break
 
-        headers = [
-            th.get_text(" ", strip=True).lower()
-            for th in rows[0].find_all(["th", "td"])
-        ]
+    if not results_table:
+        return records
 
-        if not any(h in headers for h in
-                   ["case", "filing", "caption", "number",
-                    "date", "plaintiff", "name", "party"]):
+    rows = results_table.find_all("tr")
+    headers = [c.get_text(strip=True) for c in rows[0].find_all(["th", "td"])]
+
+    i_date    = headers.index("Filing Date")    if "Filing Date"    in headers else 0
+    i_case    = headers.index("Case Number")    if "Case Number"    in headers else 1
+    i_caption = headers.index("Case Caption")   if "Case Caption"   in headers else 2
+
+    log.info("Columns: date=%d case=%d caption=%d", i_date, i_case, i_caption)
+
+    for row in rows[1:]:
+        cells = row.find_all(["td", "th"])
+        if not cells:
             continue
 
-        log.info("Results table headers: %s", headers)
+        def cell(i):
+            if i < 0 or i >= len(cells):
+                return ""
+            return cells[i].get_text(" ", strip=True)
 
-        i_date    = -1
-        i_case    = -1
-        i_caption = -1
-        i_amount  = -1
-
-        for i, h in enumerate(headers):
-            if "filing date" in h or h == "date":
-                i_date = i
-            elif "case number" in h or "case no" in h:
-                i_case = i
-            elif "case caption" in h or "caption" in h:
-                i_caption = i
-            elif "amount" in h or "debt" in h:
-                i_amount = i
-
-        if i_date < 0:
-            i_date = 0
-        if i_case < 0:
-            i_case = 1
-        if i_caption < 0:
-            i_caption = 2
-
-        log.info("Column mapping -- date:%d case:%d caption:%d", i_date, i_case, i_caption)
-
-        for row in rows[1:]:
-            cells = row.find_all(["td", "th"])
-            if not cells:
+        try:
+            case_num = cell(i_case).strip()
+            if not case_num or not re.search(r"\w{3,}", case_num):
+                continue
+            if case_num.lower() in ("case number", "case no", "number"):
                 continue
 
-            def cell(i):
-                if i < 0 or i >= len(cells):
-                    return ""
-                return cells[i].get_text(" ", strip=True)
+            filed   = parse_date(cell(i_date))
+            caption = normalize(cell(i_caption))
 
-            try:
-                case_num = cell(i_case)
-                if not case_num or not re.search(r"\w{3,}", case_num):
-                    continue
-                if case_num.lower() in (
-                    "case number", "case no", "number", "no.",
-                    "filing date", "case caption", "caption", "date"
-                ):
-                    continue
+            owner   = caption
+            grantee = ""
+            if " VS " in caption:
+                parts   = caption.split(" VS ", 1)
+                owner   = parts[0].strip()
+                grantee = parts[1].strip()
+            elif " V " in caption:
+                parts   = caption.split(" V ", 1)
+                owner   = parts[0].strip()
+                grantee = parts[1].strip()
 
-                filed   = parse_date(cell(i_date))
-                caption = normalize(cell(i_caption))
-                amount  = safe_float(cell(i_amount))
+            clerk_url = base_url
+            lc = cells[i_case] if i_case < len(cells) else cells[0]
+            anchor = lc.find("a", href=True)
+            if anchor:
+                clerk_url = urljoin(base_url, anchor["href"])
 
-                owner   = caption
-                grantee = ""
-                if " VS " in caption:
-                    parts   = caption.split(" VS ", 1)
-                    owner   = parts[0].strip()
-                    grantee = parts[1].strip()
-                elif " V " in caption:
-                    parts   = caption.split(" V ", 1)
-                    owner   = parts[0].strip()
-                    grantee = parts[1].strip()
-
-                clerk_url = base_url
-                lc = cells[i_case] if i_case < len(cells) else cells[0]
-                anchor = lc.find("a", href=True)
-                if anchor:
-                    clerk_url = urljoin(base_url, anchor["href"])
-
-                records.append({
-                    "doc_num":      case_num.strip(),
-                    "doc_type":     normalize(cat_label),
-                    "filed":        filed,
-                    "cat":          cat,
-                    "cat_label":    cat_label,
-                    "owner":        owner,
-                    "grantee":      grantee,
-                    "amount":       amount,
-                    "legal":        "",
-                    "clerk_url":    clerk_url,
-                    "prop_address": "",
-                    "prop_city":    "Summit County",
-                    "prop_state":   "OH",
-                    "prop_zip":     "",
-                    "mail_address": "",
-                    "mail_city":    "",
-                    "mail_state":   "",
-                    "mail_zip":     "",
-                })
-            except Exception as exc:
-                log.debug("Row error: %s", exc)
+            records.append({
+                "doc_num":      case_num,
+                "doc_type":     normalize(cat_label),
+                "filed":        filed,
+                "cat":          cat,
+                "cat_label":    cat_label,
+                "owner":        owner,
+                "grantee":      grantee,
+                "amount":       None,
+                "legal":        "",
+                "clerk_url":    clerk_url,
+                "prop_address": "",
+                "prop_city":    "Summit County",
+                "prop_state":   "OH",
+                "prop_zip":     "",
+                "mail_address": "",
+                "mail_city":    "",
+                "mail_state":   "",
+                "mail_zip":     "",
+            })
+        except Exception as exc:
+            log.debug("Row error: %s", exc)
 
     return records
 
