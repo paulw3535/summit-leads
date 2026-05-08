@@ -208,6 +208,20 @@ async def _search_one_type(
         await page.wait_for_timeout(2000)
         body_text = await page.inner_text("body")
         log.info("Results (first 200): %s", body_text[:200].replace("\n", " "))
+
+        # Log all table headers to debug parsing
+        html_snippet = await page.content()
+        soup_debug = BeautifulSoup(html_snippet, "lxml")
+        for t in soup_debug.find_all("table"):
+            rows = t.find_all("tr")
+            if rows:
+                hdrs = [th.get_text(strip=True) for th in rows[0].find_all(["th", "td"])]
+                if hdrs:
+                    log.info("TABLE HEADERS FOUND: %s", hdrs)
+                    if len(rows) > 1:
+                        first_row = [td.get_text(strip=True) for td in rows[1].find_all(["td", "th"])]
+                        log.info("TABLE FIRST ROW: %s", first_row)
+
     except Exception as e:
         log.warning("Search click failed: %s", e)
         return records
