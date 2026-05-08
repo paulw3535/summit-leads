@@ -1,6 +1,7 @@
 """
 Summit County, Ohio – Motivated Seller Lead Scraper
-Targets: clerk.summitoh.net (Clerk of Courts - Civil Division)
+Targets: clerk.summitoh.net/PublicSite/SearchByMixed.aspx
+Exact field IDs confirmed from live page inspection.
 """
 
 from __future__ import annotations
@@ -20,7 +21,8 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 
 DISCLAIMER_PAGE = "https://clerk.summitoh.net/RecordsSearch/Disclaimer.asp?toPage=SelectDivision.asp"
-CLERK_BASE      = "https://clerk.summitoh.net/RecordsSearch/"
+SEARCH_URL      = "https://clerk.summitoh.net/PublicSite/SearchByMixed.aspx"
+CLERK_BASE      = "https://clerk.summitoh.net/PublicSite/"
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "7"))
 
@@ -46,6 +48,12 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(sys.stdout)],
 )
 log = logging.getLogger(__name__)
+
+# Exact field IDs from live page inspection
+DATE_FIELD   = "#ContentPlaceHolder1_tbFilingDate"
+MONTH_FIELD  = "#ContentPlaceHolder1_tbFilingMonth"
+DOC_DROPDOWN = "#ContentPlaceHolder1_drpDocType"
+SEARCH_BTN   = "#ContentPlaceHolder1_btnSearch"
 
 
 # ---------------------------------------------------------------------------
@@ -117,67 +125,75 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
         )
         page = await context.new_page()
 
-        # Step 1: Disclaimer — click Agree
+        # Step 1: Disclaimer
         log.info("Loading disclaimer …")
         await page.goto(DISCLAIMER_PAGE, timeout=60_000, wait_until="networkidle")
         await page.wait_for_timeout(2000)
-
         try:
             await page.click("a:has-text('Agree')", timeout=5000)
             await page.wait_for_load_state("networkidle", timeout=15000)
-            log.info("Agreed to disclaimer. URL: %s", page.url)
+            log.info("Agreed. URL: %s", page.url)
         except Exception as e:
-            log.warning("Agree click failed: %s", e)
+            log.warning("Agree failed: %s", e)
 
-        await page.wait_for_timeout(2000)
-
-        # Step 2: Click Civil
+        # Step 2: Civil
+        await page.wait_for_timeout(1500)
         try:
             await page.click("a:has-text('Civil')", timeout=5000)
             await page.wait_for_load_state("networkidle", timeout=15000)
-            log.info("Clicked Civil. URL: %s", page.url)
+            log.info("Civil clicked. URL: %s", page.url)
         except Exception as e:
             log.warning("Civil click failed: %s", e)
 
-        await page.wait_for_timeout(2000)
-
-        # Step 3: Click search by date/document type
-        for txt in [
-            "Search By Judge / Date / Case Type / Document Type",
-            "Search By Judge",
-            "Document Type",
-            "Search By Date",
-        ]:
-            try:
-                await page.click(f"a:has-text('{txt}')", timeout=4000)
-                await page.wait_for_load_state("networkidle", timeout=15000)
-                log.info("Navigated via: %s | URL: %s", txt, page.url)
-                break
-            except Exception:
-                pass
+        # Step 3: Search by judge/date/type
+        await page.wait_for_timeout(1500)
+        try:
+            await page.click(
+                "a:has-text('Search By Judge / Date / Case Type / Document Type')",
+                timeout=5000
+            )
+            await page.wait_for_load_state("networkidle", timeout=15000)
+            log.info("Search form URL: %s", page.url)
+        except Exception as e:
+            log.warning("Search form nav failed, going direct: %s", e)
+            await page.goto(SEARCH_URL, timeout=30000, wait_until="networkidle")
 
         await page.wait_for_timeout(2000)
 
-        # Log what's on the page
-        all_inputs = await page.evaluate("""
-            Array.from(document.querySelectorAll('input,select')).map(el => ({
-                tag: el.tagName, id: el.id, name: el.name,
-                type: el.type || '', placeholder: el.placeholder || ''
-            }))
+        # Read all dropdown options once so we can match them
+        dropdown_options = await page.evaluate(f"""
+            Array.from(document.querySelector('{DOC_DROPDOWN}').options)
+            .map(o => ({{value: o.value, text: o.text.trim()}}))
         """)
-        log.info("Form elements: %s", all_inputs)
+        log.info("Dropdown options: %s", dropdown_options)
 
-        # Step 4: For each target document type, fill form and collect results
-        for doc_type_name, (cat, cat_label) in TARGET_DOC_TYPES.items():
-            log.info("Searching for: %s", doc_type_name)
+        # Step 4: Search each target doc type
+        for doc_type_key, (cat, cat_label) in TARGET_DOC_TYPES.items():
+            # Find best matching option
+            match = None
+            for opt in dropdown_options:
+                opt_text = opt['text'].upper().strip()
+                if (doc_type_key in opt_text or
+                    opt_text in doc_type_key or
+                    any(word in opt_text for word in doc_type_key.split() if len(word) > 3)):
+                    match = opt
+                    break
+
+            if not match:
+                log.warning("No dropdown match for: %s", doc_type_key)
+                continue
+
+            log.info("Searching: %s → matched '%s'", doc_type_key, match['text'])
+
             try:
                 type_records = await _search_one_type(
-                    page, date_from, date_to, doc_type_name, cat, cat_label
+                    page, date_from, match['value'], match['text'], cat, cat_label
                 )
                 records.extend(type_records)
-                log.info("  → %d records for %s", len(type_records), doc_type_name)
+                log.info("  → %d records for %s", len(type_records), match['text'])
             except Exception as exc:
-                log.warning("Failed %s: %s", doc_type_name, exc)
+                log.warning("Failed %s: %s", doc_type_key, exc)
+
             await asyncio.sleep(2)
 
         await browser.close()
@@ -187,72 +203,41 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
 
 
 async def _search_one_type(
-    page, date_from: str, date_to: str,
-    doc_type_name: str, cat: str, cat_label: str
+    page, date_from: str, doc_type_value: str,
+    doc_type_label: str, cat: str, cat_label: str
 ) -> list[dict]:
     records: list[dict] = []
 
-    # Fill Case Filing Date
-    for sel in [
-        "input[name*='Date']", "input[id*='Date']",
-        "input[name*='Filing']", "input[name*='CaseDate']",
-        "input[type='text']:first-of-type",
-    ]:
-        try:
-            await page.fill(sel, date_from, timeout=3000)
-            log.debug("Filled date via %s", sel)
-            break
-        except Exception:
-            pass
+    # Navigate back to search form if needed
+    if SEARCH_URL not in page.url:
+        await page.goto(SEARCH_URL, timeout=30000, wait_until="networkidle")
+        await page.wait_for_timeout(1500)
 
-    # Select Document Type from dropdown
-    for sel in [
-        "select[name*='Doc']", "select[id*='Doc']",
-        "select[name*='Type']", "select[id*='Type']",
-        "select",
-    ]:
-        try:
-            # Try exact label first, then partial match
-            await page.select_option(sel, label=doc_type_name, timeout=3000)
-            log.debug("Selected doc type via label: %s", doc_type_name)
-            break
-        except Exception:
-            try:
-                # Try selecting by partial text
-                options = await page.evaluate(f"""
-                    Array.from(document.querySelector('{sel}').options)
-                    .map(o => ({{value: o.value, text: o.text}}))
-                """)
-                match = next(
-                    (o for o in options
-                     if doc_type_name.lower() in o['text'].lower() or
-                        o['text'].lower() in doc_type_name.lower()),
-                    None
-                )
-                if match:
-                    await page.select_option(sel, value=match['value'], timeout=3000)
-                    log.debug("Selected doc type via value: %s", match['text'])
-                    break
-            except Exception:
-                pass
+    # Fill date — use the exact field ID
+    try:
+        await page.fill(DATE_FIELD, date_from, timeout=5000)
+        log.debug("Filled date: %s", date_from)
+    except Exception as e:
+        log.warning("Date fill failed: %s", e)
 
-    # Click Search
-    for sel in [
-        "input[value='Search']", "button:has-text('Search')",
-        "input[type='submit']", "button[type='submit']",
-        "a:has-text('Search')",
-    ]:
-        try:
-            await page.click(sel, timeout=5000)
-            await page.wait_for_load_state("networkidle", timeout=30000)
-            log.debug("Search submitted")
-            break
-        except Exception:
-            pass
+    # Select document type by value
+    try:
+        await page.select_option(DOC_DROPDOWN, value=doc_type_value, timeout=5000)
+        log.debug("Selected doc type: %s", doc_type_label)
+    except Exception as e:
+        log.warning("Doc type select failed: %s", e)
 
-    await page.wait_for_timeout(2000)
+    # Click Search button
+    try:
+        await page.click(SEARCH_BTN, timeout=5000)
+        await page.wait_for_load_state("networkidle", timeout=30000)
+        await page.wait_for_timeout(2000)
+        log.debug("Search submitted. URL: %s", page.url)
+    except Exception as e:
+        log.warning("Search click failed: %s", e)
+        return records
 
-    # Collect paginated results
+    # Collect all pages
     page_num = 0
     while True:
         page_num += 1
@@ -261,7 +246,7 @@ async def _search_one_type(
         records.extend(page_records)
         log.debug("  Page %d: %d records", page_num, len(page_records))
 
-        # Next page
+        # Check for next page
         next_btn = page.locator(
             "a:has-text('Next'), input[value='Next'], "
             "a[title*='next'], .next > a"
@@ -278,14 +263,6 @@ async def _search_one_type(
 
         if page_num > 50:
             break
-
-    # Go back to search form for next type
-    try:
-        await page.go_back()
-        await page.wait_for_load_state("networkidle", timeout=10000)
-        await page.wait_for_timeout(1000)
-    except Exception:
-        pass
 
     return records
 
@@ -304,8 +281,10 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
             for th in rows[0].find_all(["th", "td"])
         ]
         if not any(h in headers for h in
-                   ["case", "name", "date", "filed", "doc", "party", "type"]):
+                   ["case", "name", "date", "filed", "doc", "party", "type", "plaintiff"]):
             continue
+
+        log.debug("Found results table with headers: %s", headers)
 
         def ci(*candidates):
             for c in candidates:
@@ -313,12 +292,6 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
                     if c in h:
                         return i
             return -1
-
-        def cell(row, i):
-            cells = row.find_all(["td", "th"])
-            if i < 0 or i >= len(cells):
-                return ""
-            return cells[i].get_text(" ", strip=True)
 
         i_case    = ci("case", "number", "no")
         i_date    = ci("date", "filed")
@@ -331,18 +304,27 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
             cells = row.find_all(["td", "th"])
             if not cells:
                 continue
+
+            def cell(i):
+                if i < 0 or i >= len(cells):
+                    return ""
+                return cells[i].get_text(" ", strip=True)
+
             try:
-                case_num = cell(row, i_case) or cell(row, 0)
+                case_num = cell(i_case) or cell(0)
                 if not case_num or not re.search(r"\w{3,}", case_num):
                     continue
 
-                doc_type_raw = cell(row, i_type) or cat_label
-                filed        = parse_date(cell(row, i_date))
-                party1       = normalize(cell(row, i_party1))
-                party2       = normalize(cell(row, i_party2))
-                amount       = safe_float(cell(row, i_amount))
+                # Skip header-like rows
+                if case_num.lower() in ("case number", "case no", "number"):
+                    continue
 
-                # URL
+                doc_type_raw = cell(i_type) or cat_label
+                filed        = parse_date(cell(i_date))
+                party1       = normalize(cell(i_party1))
+                party2       = normalize(cell(i_party2))
+                amount       = safe_float(cell(i_amount))
+
                 clerk_url = base_url
                 link_cell = cells[max(i_case, 0)] if i_case < len(cells) else cells[0]
                 anchor = link_cell.find("a", href=True)
@@ -414,7 +396,7 @@ def score_record(rec: dict, all_records: list[dict]) -> tuple[int, list[str]]:
         score += 10
 
     owner_docs = [r for r in all_records if r.get("owner") == owner and r is not rec]
-    has_fc = any(r.get("cat") == "foreclosure" for r in owner_docs)
+    has_fc   = any(r.get("cat") == "foreclosure" for r in owner_docs)
     has_lien = any(r.get("cat") == "lien" for r in owner_docs)
     if has_fc and has_lien:
         score += 20
