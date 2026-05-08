@@ -222,7 +222,7 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
     soup = BeautifulSoup(html, "lxml")
     records: list[dict] = []
 
-    # Find the specific results table — it has exactly these 3 headers
+    # Find the specific results table with Filing Date / Case Number / Case Caption headers
     results_table = None
     for table in soup.find_all("table"):
         rows = table.find_all("tr")
@@ -230,9 +230,7 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
             continue
         header_cells = rows[0].find_all(["th", "td"])
         header_texts = [c.get_text(strip=True) for c in header_cells]
-        # Look for the exact data table
-        if (len(header_texts) >= 3 and
-            "Filing Date" in header_texts and
+        if ("Filing Date" in header_texts and
             "Case Number" in header_texts and
             "Case Caption" in header_texts):
             results_table = table
@@ -243,13 +241,22 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
         return records
 
     rows = results_table.find_all("tr")
-    headers = [c.get_text(strip=True) for c in rows[0].find_all(["th", "td"])]
+    header_cells = rows[0].find_all(["th", "td"])
+    headers = [c.get_text(strip=True) for c in header_cells]
 
-    i_date    = headers.index("Filing Date")    if "Filing Date"    in headers else 0
-    i_case    = headers.index("Case Number")    if "Case Number"    in headers else 1
-    i_caption = headers.index("Case Caption")   if "Case Caption"   in headers else 2
+    i_date    = headers.index("Filing Date")  if "Filing Date"  in headers else 0
+    i_case    = headers.index("Case Number")  if "Case Number"  in headers else 1
+    i_caption = headers.index("Case Caption") if "Case Caption" in headers else 2
 
-    log.info("Columns: date=%d case=%d caption=%d", i_date, i_case, i_caption)
+    log.info("Columns: date=%d case=%d caption=%d total_header_cols=%d",
+             i_date, i_case, i_caption, len(headers))
+
+    # Log first data row to understand structure
+    if len(rows) > 1:
+        test_cells = rows[1].find_all(["td", "th"])
+        log.info("First data row: %d cells -- %s",
+                 len(test_cells),
+                 [c.get_text(strip=True)[:30] for c in test_cells])
 
     for row in rows[1:]:
         cells = row.find_all(["td", "th"])
@@ -265,11 +272,15 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
             case_num = cell(i_case).strip()
             if not case_num or not re.search(r"\w{3,}", case_num):
                 continue
-            if case_num.lower() in ("case number", "case no", "number"):
+            if case_num.lower() in ("case number", "case no", "number", "filing date", "case caption"):
                 continue
 
             filed   = parse_date(cell(i_date))
             caption = normalize(cell(i_caption))
+
+            # Skip rows where caption looks like a header
+            if not caption or caption in ("CASE CAPTION", "CASE NUMBER", "FILING DATE"):
+                continue
 
             owner   = caption
             grantee = ""
@@ -287,6 +298,8 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
             anchor = lc.find("a", href=True)
             if anchor:
                 clerk_url = urljoin(base_url, anchor["href"])
+
+            log.info("RECORD: %s | %s | %s", case_num, filed, caption[:50])
 
             records.append({
                 "doc_num":      case_num,
