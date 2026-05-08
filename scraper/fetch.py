@@ -169,9 +169,13 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
             .map(o => ({value: o.value, text: o.text.trim().toUpperCase()}))
         """)
 
+        # Log ALL options so we can see exact names
+        log.info("Dropdown has %d options", len(dropdown_options))
+        for opt in dropdown_options:
+            log.info("OPTION: '%s'", opt['text'])
+
         # Build lookup: uppercase text -> value
         option_lookup = {opt['text']: opt['value'] for opt in dropdown_options}
-        log.info("Dropdown has %d options", len(dropdown_options))
 
         # Step 4: Search each target type using exact match
         for doc_type_key, (cat, cat_label) in TARGET_DOC_TYPES.items():
