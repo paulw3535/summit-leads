@@ -1,7 +1,6 @@
 """
 Summit County, Ohio – Motivated Seller Lead Scraper
-Uses Playwright to browse summitcountyoh-web.tylerhost.net like a real user.
-Search button ID: searchButton | Results path: /web/searchResults/DOCSEARCH236S2
+Tyler Self-Service: summitcountyoh-web.tylerhost.net
 """
 
 from __future__ import annotations
@@ -13,7 +12,6 @@ import logging
 import os
 import re
 import sys
-import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
@@ -21,7 +19,9 @@ from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
-RECORDER_BASE = "https://summitcountyoh-web.tylerhost.net/web/"
+RECORDER_BASE  = "https://summitcountyoh-web.tylerhost.net/web/"
+SEARCH_PAGE    = "https://summitcountyoh-web.tylerhost.net/web/search/DOCSEARCH236S2"
+RESULTS_PAGE   = "https://summitcountyoh-web.tylerhost.net/web/searchResults/DOCSEARCH236S2"
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "7"))
 
@@ -98,7 +98,7 @@ def categorize(doc_type: str) -> tuple[str, str]:
         return "lien", doc_type.title()
     if "PENDENS" in upper or "FORECLOS" in upper or "SHERIFF" in upper:
         return "foreclosure", doc_type.title()
-    if "JUDGMENT" in upper or "CERTIFICATE OF J" in upper:
+    if "JUDGMENT" in upper:
         return "judgment", doc_type.title()
     if "DEATH" in upper or "PROBATE" in upper or "ESTATE" in upper:
         return "probate", doc_type.title()
@@ -129,97 +129,93 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
         )
         page = await context.new_page()
 
-        # ── Load the search page ────────────────────────────────────────────
-        search_url = f"{RECORDER_BASE}search/DOCSEARCH236S2"
-        log.info("Loading search page: %s", search_url)
-        await page.goto(search_url, timeout=60_000, wait_until="networkidle")
+        # Step 1: Load the home page to establish session
+        log.info("Establishing session …")
+        await page.goto(RECORDER_BASE, timeout=60_000, wait_until="networkidle")
         await page.wait_for_timeout(2000)
 
-        # ── Fill Recording Date Start ───────────────────────────────────────
-        log.info("Filling date range %s → %s", date_from, date_to)
-        for sel in [
-            "input#RecordingDateFrom",
-            "input[id*='RecordingDateFrom']",
-            "input[name*='RecordingDateFrom']",
-            "input[id*='DateFrom']",
-            "input[placeholder*='Start']",
-            "input[placeholder*='From']",
-            "input.ss-input:first-of-type",
-            "input[type='text']:nth-of-type(1)",
-        ]:
-            try:
-                await page.fill(sel, date_from, timeout=3000)
-                log.info("Filled start date via: %s", sel)
-                break
-            except Exception:
-                pass
+        # Step 2: Navigate to the search form
+        log.info("Loading search form: %s", SEARCH_PAGE)
+        await page.goto(SEARCH_PAGE, timeout=60_000, wait_until="networkidle")
+        await page.wait_for_timeout(2000)
 
-        # ── Fill Recording Date End ─────────────────────────────────────────
-        for sel in [
-            "input#RecordingDateTo",
-            "input[id*='RecordingDateTo']",
-            "input[name*='RecordingDateTo']",
-            "input[id*='DateTo']",
-            "input[placeholder*='End']",
-            "input[placeholder*='To']",
-            "input.ss-input:last-of-type",
-            "input[type='text']:nth-of-type(2)",
-        ]:
-            try:
-                await page.fill(sel, date_to, timeout=3000)
-                log.info("Filled end date via: %s", sel)
-                break
-            except Exception:
-                pass
-
-        await page.wait_for_timeout(1000)
-
-        # ── Click Search button ─────────────────────────────────────────────
-        searched = False
-        for sel in [
-            "a#searchButton",
-            "#searchButton",
-            "a[id='searchButton']",
-            "a[href*='searchResults']",
-            "a[href*='DOCSEARCH']",
-            "a.ui-icon-search",
-            "a:has-text('Search')",
-            "button:has-text('Search')",
-            "input[value='Search']",
-            "button[type='submit']",
-        ]:
-            try:
-                await page.click(sel, timeout=5000)
-                await page.wait_for_load_state("networkidle", timeout=30000)
-                searched = True
-                log.info("Search submitted via: %s", sel)
-                break
-            except Exception:
-                pass
-
-        if not searched:
-            # Direct URL fallback with query params
-            log.warning("Button click failed — trying direct results URL")
-            try:
-                results_url = (
-                    f"{RECORDER_BASE}searchResults/DOCSEARCH236S2"
-                    f"?RecordingDateFrom={date_from}&RecordingDateTo={date_to}"
-                )
-                await page.goto(results_url, timeout=30000, wait_until="networkidle")
-                searched = True
-                log.info("Navigated directly to results URL")
-            except Exception as exc:
-                log.error("Direct navigation failed: %s", exc)
-                await browser.close()
-                return records
-
-        await page.wait_for_timeout(3000)
-
-        # ── Read left panel doc type filters ───────────────────────────────
+        # Log what's on the page for debugging
         html = await page.content()
         soup = BeautifulSoup(html, "lxml")
+        inputs = [i.get("id", i.get("name", "?")) for i in soup.find_all("input")]
+        links  = [(a.get("id","?"), a.get("href","?")) for a in soup.find_all("a", href=True)]
+        log.info("Inputs on page: %s", inputs[:10])
+        log.info("Links on page: %s", links[:10])
+
+        # Step 3: Fill date fields using JavaScript (most reliable for jQuery Mobile)
+        log.info("Setting dates via JS: %s → %s", date_from, date_to)
+        await page.evaluate(f"""
+            (function() {{
+                var inputs = document.querySelectorAll('input[type="text"], input[type="date"]');
+                console.log('Found inputs:', inputs.length);
+                inputs.forEach(function(inp) {{
+                    var id = (inp.id || '').toLowerCase();
+                    var name = (inp.name || '').toLowerCase();
+                    if (id.includes('from') || name.includes('from') || id.includes('start')) {{
+                        inp.value = '{date_from}';
+                        inp.dispatchEvent(new Event('change', {{bubbles: true}}));
+                        inp.dispatchEvent(new Event('input', {{bubbles: true}}));
+                    }}
+                    if (id.includes('to') || name.includes('to') || id.includes('end')) {{
+                        inp.value = '{date_to}';
+                        inp.dispatchEvent(new Event('change', {{bubbles: true}}));
+                        inp.dispatchEvent(new Event('input', {{bubbles: true}}));
+                    }}
+                }});
+            }})();
+        """)
+        await page.wait_for_timeout(1000)
+
+        # Step 4: Click searchButton by ID using JavaScript
+        log.info("Clicking search button via JS …")
+        clicked = await page.evaluate("""
+            (function() {
+                var btn = document.getElementById('searchButton');
+                if (btn) { btn.click(); return 'clicked searchButton'; }
+                var btns = document.querySelectorAll('a[href*="searchResults"], a[href*="DOCSEARCH"]');
+                if (btns.length > 0) { btns[0].click(); return 'clicked href match'; }
+                return 'no button found';
+            })();
+        """)
+        log.info("Click result: %s", clicked)
+        await page.wait_for_load_state("networkidle", timeout=30000)
+        await page.wait_for_timeout(3000)
+
+        current_url = page.url
+        log.info("After search, URL: %s", current_url)
+
+        # Step 5: If still on search page, try Playwright click
+        if "search/" in current_url and "searchResults" not in current_url:
+            log.warning("JS click didn't navigate, trying Playwright click")
+            for sel in ["#searchButton", "a#searchButton", "a[href*='searchResults']"]:
+                try:
+                    await page.click(sel, timeout=5000)
+                    await page.wait_for_load_state("networkidle", timeout=20000)
+                    log.info("Playwright click worked: %s", sel)
+                    break
+                except Exception as e:
+                    log.debug("Playwright click failed %s: %s", sel, e)
+            await page.wait_for_timeout(2000)
+
+        # Step 6: Parse results
+        current_url = page.url
+        log.info("Results URL: %s", current_url)
+        html = await page.content()
+
+        # Check how many results we got
+        result_match = re.search(r"(\d+)\s+Total\s+Results", html, re.I)
+        if result_match:
+            log.info("Total results found: %s", result_match.group(1))
+
+        # Extract left panel doc type filters
+        soup = BeautifulSoup(html, "lxml")
         left_panel = _extract_left_panel(soup, page.url)
-        log.info("Left panel types found: %d", len(left_panel))
+        log.info("Left panel types: %d", len(left_panel))
 
         if left_panel:
             for type_name, href in left_panel.items():
@@ -234,14 +230,14 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
                 try:
                     type_records = await _collect_type(page, href, type_name)
                     records.extend(type_records)
-                    log.info("  → %d records", len(type_records))
+                    log.info("  → %d records for %s", len(type_records), type_name)
                 except Exception as exc:
                     log.warning("Failed %s: %s", type_name, exc)
                 await asyncio.sleep(2)
         else:
-            # No left panel — parse everything and keep target types
-            log.info("No left panel — parsing all results and filtering by type")
+            log.info("No left panel — parsing all results and filtering")
             all_recs = await _collect_all_pages(page)
+            log.info("All results parsed: %d", len(all_recs))
             for rec in all_recs:
                 cat, _ = categorize(rec.get("doc_type", ""))
                 if cat != "other":
@@ -270,13 +266,9 @@ async def _collect_type(page, href: str, type_name: str) -> list[dict]:
         try:
             await page.click(f"text={type_name.title()}", timeout=5000)
             await page.wait_for_load_state("networkidle", timeout=20000)
-        except Exception:
-            try:
-                await page.click(f"text={type_name}", timeout=5000)
-                await page.wait_for_load_state("networkidle", timeout=20000)
-            except Exception as exc:
-                log.warning("Could not navigate to %s: %s", type_name, exc)
-                return []
+        except Exception as exc:
+            log.warning("Could not navigate to %s: %s", type_name, exc)
+            return []
     await page.wait_for_timeout(2000)
     return await _collect_all_pages(page, doc_type_hint=type_name)
 
@@ -293,8 +285,7 @@ async def _collect_all_pages(page, doc_type_hint: str = "") -> list[dict]:
         log.debug("  Page %d: %d records", page_num, len(page_records))
 
         next_btn = page.locator(
-            "a#nextButton, a:has-text('Next'), "
-            "a[href*='next'], .next > a, li.next > a"
+            "a#nextButton, a:has-text('Next'), .next > a, li.next > a"
         ).first
         try:
             visible = await next_btn.is_visible(timeout=2000)
@@ -316,8 +307,7 @@ def parse_tyler_html(html: str, doc_type_hint: str = "") -> list[dict]:
     soup = BeautifulSoup(html, "lxml")
     records: list[dict] = []
 
-    # Tyler renders each result as a list item or card
-    # Pattern: "57018950 • DEED" with Recording Date, Grantor, Grantee, Legal below
+    # Tyler renders results as list items containing doc number • type
     containers = []
     for sel in [
         "li.ss-listview-internal",
@@ -331,11 +321,10 @@ def parse_tyler_html(html: str, doc_type_hint: str = "") -> list[dict]:
             containers = found
             break
 
-    # Fallback: find list items containing a doc number pattern
     if not containers:
         containers = [
-            div for div in soup.find_all(["li", "div"])
-            if re.search(r"\b\d{7,10}\s*[•·]\s*[A-Z]", div.get_text(" ", strip=True))
+            el for el in soup.find_all(["li", "div"])
+            if re.search(r"\b\d{7,10}\s*[•·]\s*[A-Z]", el.get_text(" ", strip=True))
         ]
 
     for c in containers:
@@ -372,8 +361,9 @@ def _parse_tyler_card(container, doc_type_hint: str) -> Optional[dict]:
     if not text or len(text) < 10:
         return None
 
-    # "57018950 • DEED" or "57018950 · MORTGAGE"
-    m = re.search(r"(\d{7,10})\s*[•·\-]\s*([A-Z][A-Z\s/&]+?)(?:\s{2,}|\n|Recording|$)", text)
+    m = re.search(
+        r"(\d{7,10})\s*[•·\-]\s*([A-Z][A-Z\s/&]+?)(?:\s{2,}|\n|Recording|$)", text
+    )
     if m:
         doc_num = m.group(1)
         doc_type_raw = m.group(2).strip()
@@ -385,39 +375,33 @@ def _parse_tyler_card(container, doc_type_hint: str) -> Optional[dict]:
     if not doc_num:
         return None
 
-    # Date
     dm = re.search(r"(\d{1,2}/\d{1,2}/\d{4})", text)
     filed = parse_date(dm.group(1)) if dm else ""
 
-    # Grantor
     grantor = ""
-    gm = re.search(r"Grantor[^:]*[:\s]+(.*?)(?:Grantee|Legal|Recording|\n\n|$)", text, re.I | re.S)
+    gm = re.search(
+        r"Grantor[^:]*[:\s]+(.*?)(?:Grantee|Legal|Recording|\n\n|$)", text, re.I | re.S
+    )
     if gm:
         grantor = normalize(re.sub(r"\s+", " ", gm.group(1))[:80])
 
-    # Grantee
     grantee = ""
-    gem = re.search(r"Grantee[^:]*[:\s]+(.*?)(?:Legal|Recording|Parcel|\n\n|$)", text, re.I | re.S)
+    gem = re.search(
+        r"Grantee[^:]*[:\s]+(.*?)(?:Legal|Recording|Parcel|\n\n|$)", text, re.I | re.S
+    )
     if gem:
         grantee = normalize(re.sub(r"\s+", " ", gem.group(1))[:80])
 
-    # Legal / parcel
     legal = ""
     lm = re.search(r"(Parcel[:\s]+[\d-]+)", text, re.I)
     if lm:
         legal = lm.group(1)
-    else:
-        lm2 = re.search(r"Legal[^:]*:\s*(.{5,80}?)(?:\n|Parcel|$)", text, re.I)
-        if lm2:
-            legal = lm2.group(1).strip()
 
-    # Amount
     amount = None
     am = re.search(r"\$[\d,]+(?:\.\d{2})?", text)
     if am:
         amount = safe_float(am.group(0))
 
-    # URL
     clerk_url = RECORDER_BASE
     a = container.find("a", href=True)
     if a:
@@ -622,7 +606,9 @@ def write_outputs(records, fetched_at, start_date, end_date):
 
     for path in (DASHBOARD_JSON, DATA_JSON):
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+        path.write_text(
+            json.dumps(payload, indent=2, default=str), encoding="utf-8"
+        )
         log.info("Wrote %s", path)
 
     GHL_CSV.parent.mkdir(parents=True, exist_ok=True)
