@@ -1,6 +1,7 @@
 """
 Summit County, Ohio – Motivated Seller Lead Scraper
 Uses Playwright to browse summitcountyoh-web.tylerhost.net like a real user.
+Search button ID: searchButton | Results path: /web/searchResults/DOCSEARCH236S2
 """
 
 from __future__ import annotations
@@ -33,6 +34,7 @@ TARGET_DOC_TYPES = {
     "STATE OF OH LIEN":        ("lien",        "State of OH Lien"),
     "ASSESSMENT LIEN":         ("lien",        "Assessment Lien"),
     "CHILD SUPPORT LIEN":      ("lien",        "Child Support Lien"),
+    "DELINQUENT TAX LIEN":     ("lien",        "Delinquent Tax Lien"),
     "LIEN":                    ("lien",        "Lien"),
     "MECHANICS LIEN":          ("lien",        "Mechanic Lien"),
     "JUDGMENT LIEN":           ("judgment",    "Judgment Lien"),
@@ -41,7 +43,6 @@ TARGET_DOC_TYPES = {
     "NOTICE OF COMMENCEMENT":  ("noc",         "Notice of Commencement"),
     "LIS PENDENS RELEASE":     ("release",     "Lis Pendens Release"),
     "RELEASE OF LIS PENDENS":  ("release",     "Release of Lis Pendens"),
-    "DELINQUENT TAX LIEN":     ("lien",        "Delinquent Tax Lien"),
 }
 
 REPO_ROOT      = Path(__file__).resolve().parent.parent
@@ -72,13 +73,11 @@ def safe_float(v: Any) -> Optional[float]:
 def parse_date(raw: str) -> str:
     if not raw:
         return ""
-    # Handle "05/01/2026 07:51 AM"
     for fmt in ("%m/%d/%Y %I:%M %p", "%m/%d/%Y %H:%M", "%m/%d/%Y", "%Y-%m-%d"):
         try:
             return datetime.strptime(raw.strip(), fmt).strftime("%Y-%m-%d")
         except Exception:
             pass
-    # Try just first 10 chars
     try:
         return datetime.strptime(raw.strip()[:10], "%m/%d/%Y").strftime("%Y-%m-%d")
     except Exception:
@@ -88,25 +87,6 @@ def parse_date(raw: str) -> str:
 
 def normalize(s: str) -> str:
     return re.sub(r"\s+", " ", str(s).upper().strip())
-
-
-def name_variants(full: str) -> list[str]:
-    n = normalize(full)
-    variants = {n}
-    if "," in n:
-        parts = [p.strip() for p in n.split(",", 1)]
-        last, rest = parts[0], parts[1]
-        variants.add(f"{rest} {last}")
-        first = rest.split()[0] if rest.split() else rest
-        variants.add(f"{first} {last}")
-        variants.add(f"{last} {first}")
-    else:
-        tokens = n.split()
-        if len(tokens) >= 2:
-            first, last = tokens[0], tokens[-1]
-            variants.add(f"{last}, {' '.join(tokens[1:])}")
-            variants.add(f"{last} {first}")
-    return list(variants)
 
 
 def categorize(doc_type: str) -> tuple[str, str]:
@@ -149,96 +129,118 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
         )
         page = await context.new_page()
 
-        log.info("Loading recorder search page …")
-        await page.goto(RECORDER_BASE, timeout=60_000, wait_until="networkidle")
+        # ── Load the search page ────────────────────────────────────────────
+        search_url = f"{RECORDER_BASE}search/DOCSEARCH236S2"
+        log.info("Loading search page: %s", search_url)
+        await page.goto(search_url, timeout=60_000, wait_until="networkidle")
         await page.wait_for_timeout(2000)
 
-        # Fill Recording Date Start
+        # ── Fill Recording Date Start ───────────────────────────────────────
         log.info("Filling date range %s → %s", date_from, date_to)
         for sel in [
+            "input#RecordingDateFrom",
             "input[id*='RecordingDateFrom']",
             "input[name*='RecordingDateFrom']",
+            "input[id*='DateFrom']",
             "input[placeholder*='Start']",
             "input[placeholder*='From']",
-            "input[type='date']:first-of-type",
+            "input.ss-input:first-of-type",
+            "input[type='text']:nth-of-type(1)",
         ]:
             try:
                 await page.fill(sel, date_from, timeout=3000)
-                log.debug("Filled start date via: %s", sel)
+                log.info("Filled start date via: %s", sel)
                 break
             except Exception:
                 pass
 
-        # Fill Recording Date End
+        # ── Fill Recording Date End ─────────────────────────────────────────
         for sel in [
+            "input#RecordingDateTo",
             "input[id*='RecordingDateTo']",
             "input[name*='RecordingDateTo']",
+            "input[id*='DateTo']",
             "input[placeholder*='End']",
             "input[placeholder*='To']",
+            "input.ss-input:last-of-type",
+            "input[type='text']:nth-of-type(2)",
         ]:
             try:
                 await page.fill(sel, date_to, timeout=3000)
-                log.debug("Filled end date via: %s", sel)
+                log.info("Filled end date via: %s", sel)
                 break
             except Exception:
                 pass
 
-        # Click Search
+        await page.wait_for_timeout(1000)
+
+        # ── Click Search button ─────────────────────────────────────────────
         searched = False
         for sel in [
+            "a#searchButton",
+            "#searchButton",
+            "a[id='searchButton']",
+            "a[href*='searchResults']",
+            "a[href*='DOCSEARCH']",
+            "a.ui-icon-search",
+            "a:has-text('Search')",
             "button:has-text('Search')",
             "input[value='Search']",
             "button[type='submit']",
-            "input[type='submit']",
-            "a:has-text('Search')",
         ]:
             try:
                 await page.click(sel, timeout=5000)
                 await page.wait_for_load_state("networkidle", timeout=30000)
                 searched = True
-                log.info("Search submitted")
+                log.info("Search submitted via: %s", sel)
                 break
             except Exception:
                 pass
 
         if not searched:
-            log.error("Could not submit search form")
-            await browser.close()
-            return records
+            # Direct URL fallback with query params
+            log.warning("Button click failed — trying direct results URL")
+            try:
+                results_url = (
+                    f"{RECORDER_BASE}searchResults/DOCSEARCH236S2"
+                    f"?RecordingDateFrom={date_from}&RecordingDateTo={date_to}"
+                )
+                await page.goto(results_url, timeout=30000, wait_until="networkidle")
+                searched = True
+                log.info("Navigated directly to results URL")
+            except Exception as exc:
+                log.error("Direct navigation failed: %s", exc)
+                await browser.close()
+                return records
 
         await page.wait_for_timeout(3000)
 
-        # Read left panel doc type filters and click each target type
+        # ── Read left panel doc type filters ───────────────────────────────
         html = await page.content()
         soup = BeautifulSoup(html, "lxml")
+        left_panel = _extract_left_panel(soup, page.url)
+        log.info("Left panel types found: %d", len(left_panel))
 
-        # Find left panel filter links
-        left_panel_links = await _get_left_panel_links(page, soup)
-        log.info("Left panel doc types found: %d", len(left_panel_links))
-
-        if left_panel_links:
-            for type_name, href in left_panel_links.items():
+        if left_panel:
+            for type_name, href in left_panel.items():
                 upper = type_name.upper()
-                is_target = any(key in upper for key in TARGET_DOC_TYPES)
-                if not is_target:
-                    # Also check reverse — target key contains type name
-                    is_target = any(upper in key for key in TARGET_DOC_TYPES)
+                is_target = (
+                    any(key in upper for key in TARGET_DOC_TYPES) or
+                    any(upper in key for key in TARGET_DOC_TYPES)
+                )
                 if not is_target:
                     continue
-
-                log.info("Collecting type: %s", type_name)
+                log.info("Collecting: %s", type_name)
                 try:
-                    type_records = await _collect_type(
-                        page, context, href, type_name
-                    )
+                    type_records = await _collect_type(page, href, type_name)
                     records.extend(type_records)
-                    log.info("  → %d records for %s", len(type_records), type_name)
+                    log.info("  → %d records", len(type_records))
                 except Exception as exc:
-                    log.warning("Failed collecting %s: %s", type_name, exc)
+                    log.warning("Failed %s: %s", type_name, exc)
                 await asyncio.sleep(2)
         else:
-            # No left panel — parse all results and keep target types
-            log.info("No left panel found, parsing all results")
+            # No left panel — parse everything and keep target types
+            log.info("No left panel — parsing all results and filtering by type")
             all_recs = await _collect_all_pages(page)
             for rec in all_recs:
                 cat, _ = categorize(rec.get("doc_type", ""))
@@ -251,45 +253,20 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
     return records
 
 
-async def _get_left_panel_links(page, soup: BeautifulSoup) -> dict[str, str]:
-    """Extract document type filter links from the left panel."""
+def _extract_left_panel(soup: BeautifulSoup, base_url: str) -> dict[str, str]:
     links: dict[str, str] = {}
-    base_url = page.url
-
-    # Tyler renders left panel as list of clickable filter labels
-    # Each has the doc type name and a count badge
-    for elem in soup.select("ul li a, div.filter a, aside a, .facet a, .left-panel a"):
-        text = elem.get_text(strip=True)
-        # Strip count numbers like "ASSESSMENT LIEN 21"
-        clean = re.sub(r"\s*\d+\s*$", "", text).strip().upper()
-        href = elem.get("href", "")
-        if clean and href:
-            links[clean] = urljoin(base_url, href)
-
-    # Also check buttons/spans that might be clickable filters
-    if not links:
-        # Try to find any element with target doc type text that's clickable
-        for key in TARGET_DOC_TYPES:
-            try:
-                elem = page.locator(f"text={key.title()}").first
-                is_visible = await elem.is_visible(timeout=1000)
-                if is_visible:
-                    href = await elem.get_attribute("href") or ""
-                    links[key] = urljoin(page.url, href) if href else key
-            except Exception:
-                pass
-
+    for a in soup.select("ul li a, div.filter a, aside a, .facet a, nav a"):
+        text = re.sub(r"\s*\d+\s*$", "", a.get_text(strip=True)).strip().upper()
+        href = a.get("href", "")
+        if text and href and len(text) > 2:
+            links[text] = urljoin(base_url, href)
     return links
 
 
-async def _collect_type(page, context, href_or_key: str, type_name: str) -> list[dict]:
-    """Navigate to a doc type filter and collect all paginated results."""
-    records: list[dict] = []
-
-    if href_or_key.startswith("http"):
-        await page.goto(href_or_key, timeout=30000, wait_until="networkidle")
+async def _collect_type(page, href: str, type_name: str) -> list[dict]:
+    if href.startswith("http"):
+        await page.goto(href, timeout=30000, wait_until="networkidle")
     else:
-        # Click the element with this text
         try:
             await page.click(f"text={type_name.title()}", timeout=5000)
             await page.wait_for_load_state("networkidle", timeout=20000)
@@ -298,16 +275,13 @@ async def _collect_type(page, context, href_or_key: str, type_name: str) -> list
                 await page.click(f"text={type_name}", timeout=5000)
                 await page.wait_for_load_state("networkidle", timeout=20000)
             except Exception as exc:
-                log.warning("Could not navigate to type %s: %s", type_name, exc)
-                return records
-
+                log.warning("Could not navigate to %s: %s", type_name, exc)
+                return []
     await page.wait_for_timeout(2000)
-    records = await _collect_all_pages(page, doc_type_hint=type_name)
-    return records
+    return await _collect_all_pages(page, doc_type_hint=type_name)
 
 
 async def _collect_all_pages(page, doc_type_hint: str = "") -> list[dict]:
-    """Read all pages of results from the current Tyler results view."""
     records: list[dict] = []
     page_num = 0
 
@@ -318,13 +292,10 @@ async def _collect_all_pages(page, doc_type_hint: str = "") -> list[dict]:
         records.extend(page_records)
         log.debug("  Page %d: %d records", page_num, len(page_records))
 
-        # Check for Next page
         next_btn = page.locator(
-            "a:has-text('Next'), button:has-text('Next'), "
-            "a:has-text('>'), .next > a, li.next > a, "
-            "a[title*='next'], a[aria-label*='next']"
+            "a#nextButton, a:has-text('Next'), "
+            "a[href*='next'], .next > a, li.next > a"
         ).first
-
         try:
             visible = await next_btn.is_visible(timeout=2000)
             if not visible:
@@ -336,54 +307,46 @@ async def _collect_all_pages(page, doc_type_hint: str = "") -> list[dict]:
             break
 
         if page_num > 100:
-            log.warning("Hit 100 page limit, stopping pagination")
             break
 
     return records
 
 
 def parse_tyler_html(html: str, doc_type_hint: str = "") -> list[dict]:
-    """
-    Parse Tyler Eagle Web results HTML.
-    Tyler renders results as card-style divs, each containing:
-      - Document number • Document Type
-      - Recording Date | Grantor | Grantee | Legal
-    """
     soup = BeautifulSoup(html, "lxml")
     records: list[dict] = []
 
-    # Strategy 1: Tyler card layout
-    # Each doc is a div containing the doc number and type in a heading
-    # Look for divs that contain a 7-9 digit doc number
-    result_containers = []
-
-    # Common Tyler selectors
+    # Tyler renders each result as a list item or card
+    # Pattern: "57018950 • DEED" with Recording Date, Grantor, Grantee, Legal below
+    containers = []
     for sel in [
-        "div.document-item", "div.record-item", "div.result-item",
-        "div[class*='document']", "div[class*='record']",
-        "tbody tr", "table.results tr",
+        "li.ss-listview-internal",
+        "li[class*='result']",
+        "div.document-item",
+        "div[class*='document']",
+        "tbody tr",
     ]:
         found = soup.select(sel)
-        if found and len(found) > 1:
-            result_containers = found
+        if found:
+            containers = found
             break
 
-    # Fallback: find all divs containing a doc number pattern
-    if not result_containers:
-        for div in soup.find_all("div"):
-            text = div.get_text(" ", strip=True)
-            if re.search(r"\b\d{7,10}\s*[•·]\s*[A-Z]", text):
-                result_containers.append(div)
+    # Fallback: find list items containing a doc number pattern
+    if not containers:
+        containers = [
+            div for div in soup.find_all(["li", "div"])
+            if re.search(r"\b\d{7,10}\s*[•·]\s*[A-Z]", div.get_text(" ", strip=True))
+        ]
 
-    for container in result_containers:
+    for c in containers:
         try:
-            rec = _parse_tyler_card(container, doc_type_hint)
+            rec = _parse_tyler_card(c, doc_type_hint)
             if rec:
                 records.append(rec)
         except Exception as exc:
-            log.debug("Card parse error: %s", exc)
+            log.debug("Card error: %s", exc)
 
-    # Strategy 2: table fallback
+    # Table fallback
     if not records:
         for table in soup.find_all("table"):
             rows = table.find_all("tr")
@@ -394,7 +357,7 @@ def parse_tyler_html(html: str, doc_type_hint: str = "") -> list[dict]:
                 for th in rows[0].find_all(["th", "td"])
             ]
             if not any(h in headers for h in
-                       ["doc", "grantor", "recording", "instrument", "type"]):
+                       ["doc", "grantor", "recording", "instrument"]):
                 continue
             for row in rows[1:]:
                 rec = _parse_table_row(row, headers, doc_type_hint)
@@ -409,76 +372,60 @@ def _parse_tyler_card(container, doc_type_hint: str) -> Optional[dict]:
     if not text or len(text) < 10:
         return None
 
-    # Doc number and type — "57018950 • DEED" or "57018950 · MORTGAGE"
-    num_type_match = re.search(r"(\d{7,10})\s*[•·\-]\s*([A-Z][A-Z\s/]+?)(?:\s{2,}|\n|Recording)", text)
-    if not num_type_match:
-        num_type_match = re.search(r"(\d{7,10})", text)
-        doc_num = num_type_match.group(1) if num_type_match else ""
-        doc_type_raw = doc_type_hint
+    # "57018950 • DEED" or "57018950 · MORTGAGE"
+    m = re.search(r"(\d{7,10})\s*[•·\-]\s*([A-Z][A-Z\s/&]+?)(?:\s{2,}|\n|Recording|$)", text)
+    if m:
+        doc_num = m.group(1)
+        doc_type_raw = m.group(2).strip()
     else:
-        doc_num = num_type_match.group(1)
-        doc_type_raw = num_type_match.group(2).strip()
+        nm = re.search(r"(\d{7,10})", text)
+        doc_num = nm.group(1) if nm else ""
+        doc_type_raw = doc_type_hint
 
     if not doc_num:
         return None
 
-    # Recording date
-    date_match = re.search(r"(\d{1,2}/\d{1,2}/\d{4})", text)
-    filed = parse_date(date_match.group(1)) if date_match else ""
+    # Date
+    dm = re.search(r"(\d{1,2}/\d{1,2}/\d{4})", text)
+    filed = parse_date(dm.group(1)) if dm else ""
 
-    # Grantor / Grantee
+    # Grantor
     grantor = ""
+    gm = re.search(r"Grantor[^:]*[:\s]+(.*?)(?:Grantee|Legal|Recording|\n\n|$)", text, re.I | re.S)
+    if gm:
+        grantor = normalize(re.sub(r"\s+", " ", gm.group(1))[:80])
+
+    # Grantee
     grantee = ""
-
-    gran_match = re.search(
-        r"Grantor[^:]*:\s*(.*?)(?:Grantee|Legal|Recording|\n\n)", text, re.I | re.S
-    )
-    if gran_match:
-        grantor = normalize(re.sub(r"\s+", " ", gran_match.group(1)))
-
-    gran_match2 = re.search(
-        r"Grantee[^:]*:\s*(.*?)(?:Legal|Recording|Parcel|\n\n)", text, re.I | re.S
-    )
-    if gran_match2:
-        grantee = normalize(re.sub(r"\s+", " ", gran_match2.group(1)))
-
-    # If labeled extraction failed, try structured child elements
-    if not grantor:
-        for elem in container.find_all(["td", "span", "div"]):
-            label = elem.get_text(strip=True).lower()
-            if label.startswith("grantor"):
-                nxt = elem.find_next_sibling()
-                if nxt:
-                    grantor = normalize(nxt.get_text(strip=True))
-                    break
+    gem = re.search(r"Grantee[^:]*[:\s]+(.*?)(?:Legal|Recording|Parcel|\n\n|$)", text, re.I | re.S)
+    if gem:
+        grantee = normalize(re.sub(r"\s+", " ", gem.group(1))[:80])
 
     # Legal / parcel
     legal = ""
-    legal_match = re.search(r"(Parcel[:\s]+[\d-]+)", text, re.I)
-    if legal_match:
-        legal = legal_match.group(1)
+    lm = re.search(r"(Parcel[:\s]+[\d-]+)", text, re.I)
+    if lm:
+        legal = lm.group(1)
     else:
-        legal_match2 = re.search(r"Legal[^:]*:\s*(.{10,80}?)(?:\n|Parcel|$)", text, re.I)
-        if legal_match2:
-            legal = legal_match2.group(1).strip()
+        lm2 = re.search(r"Legal[^:]*:\s*(.{5,80}?)(?:\n|Parcel|$)", text, re.I)
+        if lm2:
+            legal = lm2.group(1).strip()
 
     # Amount
     amount = None
-    amt_match = re.search(r"\$[\d,]+(?:\.\d{2})?", text)
-    if amt_match:
-        amount = safe_float(amt_match.group(0))
+    am = re.search(r"\$[\d,]+(?:\.\d{2})?", text)
+    if am:
+        amount = safe_float(am.group(0))
 
     # URL
     clerk_url = RECORDER_BASE
-    anchor = container.find("a", href=True)
-    if anchor:
-        clerk_url = urljoin(RECORDER_BASE, anchor["href"])
+    a = container.find("a", href=True)
+    if a:
+        clerk_url = urljoin(RECORDER_BASE, a["href"])
     elif doc_num:
         clerk_url = f"{RECORDER_BASE}document/{doc_num}"
 
     cat, cat_label = categorize(doc_type_raw or doc_type_hint)
-
-    # Only keep target document types
     if cat == "other" and not doc_type_hint:
         return None
 
@@ -504,7 +451,7 @@ def _parse_tyler_card(container, doc_type_hint: str) -> Optional[dict]:
     }
 
 
-def _parse_table_row(row, headers: list[str], doc_type_hint: str) -> Optional[dict]:
+def _parse_table_row(row, headers, doc_type_hint):
     cells = row.find_all(["td", "th"])
     if not cells:
         return None
@@ -521,11 +468,11 @@ def _parse_table_row(row, headers: list[str], doc_type_hint: str) -> Optional[di
             return ""
         return cells[i].get_text(" ", strip=True)
 
-    i_doc     = ci("doc", "number", "instrument", "reception")
+    i_doc     = ci("doc", "number", "instrument")
     i_type    = ci("type", "description")
     i_date    = ci("recording", "filed", "date")
     i_grantor = ci("grantor", "owner", "from")
-    i_grantee = ci("grantee", "to", "buyer")
+    i_grantee = ci("grantee", "to")
     i_legal   = ci("legal", "parcel")
     i_amount  = ci("amount", "consideration")
 
@@ -539,9 +486,10 @@ def _parse_table_row(row, headers: list[str], doc_type_hint: str) -> Optional[di
         return None
 
     clerk_url = RECORDER_BASE
-    anchor = (cells[max(i_doc, 0)] if i_doc < len(cells) else cells[0]).find("a", href=True)
-    if anchor:
-        clerk_url = urljoin(RECORDER_BASE, anchor["href"])
+    lc = cells[max(i_doc, 0)] if i_doc < len(cells) else cells[0]
+    anc = lc.find("a", href=True)
+    if anc:
+        clerk_url = urljoin(RECORDER_BASE, anc["href"])
 
     return {
         "doc_num":      doc_num.strip(),
@@ -572,9 +520,9 @@ def _parse_table_row(row, headers: list[str], doc_type_hint: str) -> Optional[di
 def score_record(rec: dict, all_records: list[dict]) -> tuple[int, list[str]]:
     flags: list[str] = []
     score = 30
-    cat   = rec.get("cat", "")
-    dtype = rec.get("doc_type", "")
-    owner = rec.get("owner", "")
+    cat    = rec.get("cat", "")
+    dtype  = rec.get("doc_type", "")
+    owner  = rec.get("owner", "")
     amount = rec.get("amount")
     filed  = rec.get("filed", "")
 
@@ -604,7 +552,7 @@ def score_record(rec: dict, all_records: list[dict]) -> tuple[int, list[str]]:
         score += 10
 
     owner_docs = [r for r in all_records if r.get("owner") == owner and r is not rec]
-    has_lp = any("PENDENS" in r.get("doc_type","") for r in owner_docs) or "PENDENS" in dtype
+    has_lp = any("PENDENS" in r.get("doc_type", "") for r in owner_docs) or "PENDENS" in dtype
     has_fc = any(r.get("cat") == "foreclosure" for r in owner_docs)
     if has_lp and has_fc:
         score += 20
@@ -724,7 +672,6 @@ async def main():
     raw = await scrape(date_from, date_to)
     log.info("Raw records: %d", len(raw))
 
-    # De-duplicate
     seen: set[str] = set()
     unique: list[dict] = []
     for rec in raw:
@@ -735,7 +682,6 @@ async def main():
         elif not key:
             unique.append(rec)
 
-    # Score
     enriched: list[dict] = []
     for rec in unique:
         try:
@@ -747,7 +693,6 @@ async def main():
             log.warning("Score error: %s", exc)
 
     enriched.sort(key=lambda r: r.get("score", 0), reverse=True)
-
     write_outputs(enriched, fetched_at, start_date, end_date)
 
     log.info(
