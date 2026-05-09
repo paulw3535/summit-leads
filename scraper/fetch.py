@@ -21,6 +21,7 @@ from bs4 import BeautifulSoup
 
 DISCLAIMER_PAGE = "https://clerk.summitoh.net/RecordsSearch/Disclaimer.asp?toPage=SelectDivision.asp"
 SEARCH_URL      = "https://clerk.summitoh.net/PublicSite/SearchByMixed.aspx"
+RESULTS_URL     = "https://clerk.summitoh.net/PublicSite/CivilSearchResults.aspx"
 CLERK_BASE      = "https://clerk.summitoh.net/PublicSite/"
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "7"))
@@ -100,6 +101,7 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
         )
         page = await context.new_page()
 
+        # Step 1: Disclaimer
         log.info("Loading disclaimer ...")
         await page.goto(DISCLAIMER_PAGE, timeout=60_000, wait_until="networkidle")
         await page.wait_for_timeout(2000)
@@ -110,6 +112,7 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
         except Exception as e:
             log.warning("Agree failed: %s", e)
 
+        # Step 2: Civil
         await page.wait_for_timeout(1500)
         try:
             await page.click("a:has-text('Civil')", timeout=5000)
@@ -118,6 +121,7 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
         except Exception as e:
             log.warning("Civil click failed: %s", e)
 
+        # Step 3: Search form
         await page.wait_for_timeout(1500)
         try:
             await page.click(
@@ -132,18 +136,19 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
 
         await page.wait_for_timeout(2000)
 
+        # Read dropdown options once
         dropdown_options = await page.evaluate("""
             Array.from(document.querySelector('#ContentPlaceHolder1_drpDocType').options)
             .map(o => ({value: o.value, text: o.text.trim().toUpperCase()}))
         """)
-
         option_lookup = {opt['text']: opt['value'] for opt in dropdown_options}
         log.info("Dropdown has %d options", len(dropdown_options))
 
+        # Step 4: Search each doc type
         for doc_type_key, (cat, cat_label) in TARGET_DOC_TYPES.items():
             opt_value = option_lookup.get(doc_type_key.upper())
             if not opt_value:
-                log.warning("No exact match for '%s' -- skipping", doc_type_key)
+                log.warning("No match for '%s' -- skipping", doc_type_key)
                 continue
 
             log.info("Searching: %s", doc_type_key)
@@ -170,28 +175,57 @@ async def _search_one_type(
 ) -> list[dict]:
     records: list[dict] = []
 
+    # Always start fresh at search form
     await page.goto(SEARCH_URL, timeout=30000, wait_until="networkidle")
     await page.wait_for_timeout(2000)
     await page.wait_for_selector(DATE_FIELD, timeout=10000)
 
+    # Fill date
     try:
         await page.fill(DATE_FIELD, date_from, timeout=5000)
+        await page.wait_for_timeout(500)
     except Exception as e:
         log.warning("Date fill failed: %s", e)
 
+    # Select doc type
     try:
         await page.select_option(DOC_DROPDOWN, value=opt_value, timeout=5000)
+        await page.wait_for_timeout(500)
     except Exception as e:
         log.warning("Select failed: %s", e)
 
+    # Click Search and wait for URL to change to results page
     try:
         await page.click(SEARCH_BTN, timeout=5000)
-        await page.wait_for_load_state("networkidle", timeout=30000)
+
+        # Wait up to 15 seconds for URL to change away from SearchByMixed
+        for _ in range(30):
+            await page.wait_for_timeout(500)
+            current_url = page.url
+            if "SearchByMixed" not in current_url:
+                break
+            # Also check if page has more rows (results loaded)
+            row_count = await page.evaluate("document.querySelectorAll('tr').length")
+            if row_count > 20:
+                break
+
+        await page.wait_for_load_state("networkidle", timeout=15000)
         await page.wait_for_timeout(2000)
+
+        log.info("After search URL: %s", page.url)
+        row_count = await page.evaluate("document.querySelectorAll('tr').length")
+        log.info("Row count after search: %d", row_count)
+
     except Exception as e:
         log.warning("Search click failed: %s", e)
         return records
 
+    # If still on search page, search failed silently
+    if "SearchByMixed" in page.url:
+        log.info("Still on search page -- no results")
+        return records
+
+    # Collect paginated results
     page_num = 0
     while True:
         page_num += 1
@@ -225,12 +259,9 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
     date_pat = re.compile(r"^\d{1,2}/\d{1,2}/\d{4}$")
     case_pat = re.compile(r"[A-Z]{1,4}-?\d{4}", re.I)
 
-    # Scan every row in the entire page looking for data rows
-    # A data row starts with MM/DD/YYYY in first cell and case number in second
     all_rows = soup.find_all("tr")
     log.info("Total rows in page: %d", len(all_rows))
 
-    found_any = False
     for row in all_rows:
         cells = row.find_all(["td", "th"])
         if len(cells) < 3:
@@ -244,8 +275,6 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
             continue
         if not case_pat.search(c1):
             continue
-
-        found_any = True
 
         try:
             filed    = parse_date(c0)
@@ -295,9 +324,6 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
             })
         except Exception as exc:
             log.debug("Row error: %s", exc)
-
-    if not found_any:
-        log.info("No data rows found matching date+case pattern")
 
     return records
 
