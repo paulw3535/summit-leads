@@ -218,68 +218,79 @@ async def _search_one_type(
     return records
 
 
+def find_data_table(soup: BeautifulSoup):
+    """
+    Find the innermost table that has rows where the first cell
+    looks like a date (MM/DD/YYYY) and the second looks like a
+    case number (CV-YYYY-...).
+    Search all tables regardless of nesting level.
+    """
+    date_pat = re.compile(r"\d{1,2}/\d{1,2}/\d{4}")
+    case_pat = re.compile(r"[A-Z]{1,4}-?\d{4}", re.I)
+
+    best_table = None
+    best_count = 0
+
+    for table in soup.find_all("table"):
+        # Only look at direct tr children to avoid double-counting nested tables
+        rows = table.find_all("tr", recursive=False)
+        if not rows:
+            # try with recursive if no direct children
+            rows = table.find_all("tr")
+
+        data_rows = 0
+        for row in rows:
+            cells = row.find_all(["td", "th"], recursive=False)
+            if len(cells) >= 3:
+                c0 = cells[0].get_text(strip=True)
+                c1 = cells[1].get_text(strip=True)
+                if date_pat.match(c0) and case_pat.search(c1):
+                    data_rows += 1
+
+        if data_rows > best_count:
+            best_count = data_rows
+            best_table = table
+
+    if best_table:
+        log.info("Best data table found with %d data rows", best_count)
+    return best_table
+
+
 def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> list[dict]:
     soup = BeautifulSoup(html, "lxml")
     records: list[dict] = []
 
-    # Find the specific results table with Filing Date / Case Number / Case Caption headers
-    results_table = None
-    for table in soup.find_all("table"):
-        rows = table.find_all("tr")
-        if len(rows) < 2:
-            continue
-        header_cells = rows[0].find_all(["th", "td"])
-        header_texts = [c.get_text(strip=True) for c in header_cells]
-        if ("Filing Date" in header_texts and
-            "Case Number" in header_texts and
-            "Case Caption" in header_texts):
-            results_table = table
-            log.info("Found results table with %d rows", len(rows))
-            break
-
-    if not results_table:
+    table = find_data_table(soup)
+    if not table:
+        log.debug("No data table found")
         return records
 
-    rows = results_table.find_all("tr")
-    header_cells = rows[0].find_all(["th", "td"])
-    headers = [c.get_text(strip=True) for c in header_cells]
+    # Get all rows — use recursive=False first, fall back to all
+    rows = table.find_all("tr", recursive=False)
+    if not rows:
+        rows = table.find_all("tr")
 
-    i_date    = headers.index("Filing Date")  if "Filing Date"  in headers else 0
-    i_case    = headers.index("Case Number")  if "Case Number"  in headers else 1
-    i_caption = headers.index("Case Caption") if "Case Caption" in headers else 2
+    date_pat = re.compile(r"\d{1,2}/\d{1,2}/\d{4}")
 
-    log.info("Columns: date=%d case=%d caption=%d total_header_cols=%d",
-             i_date, i_case, i_caption, len(headers))
-
-    # Log first data row to understand structure
-    if len(rows) > 1:
-        test_cells = rows[1].find_all(["td", "th"])
-        log.info("First data row: %d cells -- %s",
-                 len(test_cells),
-                 [c.get_text(strip=True)[:30] for c in test_cells])
-
-    for row in rows[1:]:
-        cells = row.find_all(["td", "th"])
-        if not cells:
+    for row in rows:
+        cells = row.find_all(["td", "th"], recursive=False)
+        if len(cells) < 3:
             continue
 
-        def cell(i):
-            if i < 0 or i >= len(cells):
-                return ""
-            return cells[i].get_text(" ", strip=True)
+        c0 = cells[0].get_text(strip=True)
+        c1 = cells[1].get_text(strip=True)
+        c2 = cells[2].get_text(" ", strip=True)
+
+        # Only process rows that start with a date
+        if not date_pat.match(c0):
+            continue
 
         try:
-            case_num = cell(i_case).strip()
-            if not case_num or not re.search(r"\w{3,}", case_num):
-                continue
-            if case_num.lower() in ("case number", "case no", "number", "filing date", "case caption"):
-                continue
+            filed   = parse_date(c0)
+            case_num = c1.strip()
+            caption = normalize(c2)
 
-            filed   = parse_date(cell(i_date))
-            caption = normalize(cell(i_caption))
-
-            # Skip rows where caption looks like a header
-            if not caption or caption in ("CASE CAPTION", "CASE NUMBER", "FILING DATE"):
+            if not case_num or not caption:
                 continue
 
             owner   = caption
@@ -294,12 +305,11 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
                 grantee = parts[1].strip()
 
             clerk_url = base_url
-            lc = cells[i_case] if i_case < len(cells) else cells[0]
-            anchor = lc.find("a", href=True)
+            anchor = cells[1].find("a", href=True)
             if anchor:
                 clerk_url = urljoin(base_url, anchor["href"])
 
-            log.info("RECORD: %s | %s | %s", case_num, filed, caption[:50])
+            log.info("RECORD: %s | %s | %s", case_num, filed, caption[:60])
 
             records.append({
                 "doc_num":      case_num,
