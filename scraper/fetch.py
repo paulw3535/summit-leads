@@ -218,62 +218,21 @@ async def _search_one_type(
     return records
 
 
-def find_data_table(soup: BeautifulSoup):
-    """
-    Find the innermost table that has rows where the first cell
-    looks like a date (MM/DD/YYYY) and the second looks like a
-    case number (CV-YYYY-...).
-    Search all tables regardless of nesting level.
-    """
-    date_pat = re.compile(r"\d{1,2}/\d{1,2}/\d{4}")
-    case_pat = re.compile(r"[A-Z]{1,4}-?\d{4}", re.I)
-
-    best_table = None
-    best_count = 0
-
-    for table in soup.find_all("table"):
-        # Only look at direct tr children to avoid double-counting nested tables
-        rows = table.find_all("tr", recursive=False)
-        if not rows:
-            # try with recursive if no direct children
-            rows = table.find_all("tr")
-
-        data_rows = 0
-        for row in rows:
-            cells = row.find_all(["td", "th"], recursive=False)
-            if len(cells) >= 3:
-                c0 = cells[0].get_text(strip=True)
-                c1 = cells[1].get_text(strip=True)
-                if date_pat.match(c0) and case_pat.search(c1):
-                    data_rows += 1
-
-        if data_rows > best_count:
-            best_count = data_rows
-            best_table = table
-
-    if best_table:
-        log.info("Best data table found with %d data rows", best_count)
-    return best_table
-
-
 def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> list[dict]:
     soup = BeautifulSoup(html, "lxml")
     records: list[dict] = []
 
-    table = find_data_table(soup)
-    if not table:
-        log.debug("No data table found")
-        return records
+    date_pat = re.compile(r"^\d{1,2}/\d{1,2}/\d{4}$")
+    case_pat = re.compile(r"[A-Z]{1,4}-?\d{4}", re.I)
 
-    # Get all rows — use recursive=False first, fall back to all
-    rows = table.find_all("tr", recursive=False)
-    if not rows:
-        rows = table.find_all("tr")
+    # Scan every row in the entire page looking for data rows
+    # A data row starts with MM/DD/YYYY in first cell and case number in second
+    all_rows = soup.find_all("tr")
+    log.info("Total rows in page: %d", len(all_rows))
 
-    date_pat = re.compile(r"\d{1,2}/\d{1,2}/\d{4}")
-
-    for row in rows:
-        cells = row.find_all(["td", "th"], recursive=False)
+    found_any = False
+    for row in all_rows:
+        cells = row.find_all(["td", "th"])
         if len(cells) < 3:
             continue
 
@@ -281,14 +240,17 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
         c1 = cells[1].get_text(strip=True)
         c2 = cells[2].get_text(" ", strip=True)
 
-        # Only process rows that start with a date
         if not date_pat.match(c0):
             continue
+        if not case_pat.search(c1):
+            continue
+
+        found_any = True
 
         try:
-            filed   = parse_date(c0)
+            filed    = parse_date(c0)
             case_num = c1.strip()
-            caption = normalize(c2)
+            caption  = normalize(c2)
 
             if not case_num or not caption:
                 continue
@@ -333,6 +295,9 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
             })
         except Exception as exc:
             log.debug("Row error: %s", exc)
+
+    if not found_any:
+        log.info("No data rows found matching date+case pattern")
 
     return records
 
