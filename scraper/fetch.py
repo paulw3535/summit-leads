@@ -1,6 +1,7 @@
 """
 Summit County, Ohio – Motivated Seller Lead Scraper
 Targets: clerk.summitoh.net/PublicSite/SearchByMixed.aspx
+Searches day by day for LOOKBACK_DAYS to capture all filings.
 """
 
 from __future__ import annotations
@@ -80,7 +81,7 @@ def normalize(s: str) -> str:
     return re.sub(r"\s+", " ", str(s).upper().strip())
 
 
-async def scrape(date_from: str, date_to: str) -> list[dict]:
+async def scrape(start_date: datetime, end_date: datetime) -> list[dict]:
     from playwright.async_api import async_playwright
 
     records: list[dict] = []
@@ -143,24 +144,37 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
         option_lookup = {opt['text']: opt['value'] for opt in dropdown_options}
         log.info("Dropdown has %d options", len(dropdown_options))
 
-        # Step 4: Search each doc type
+        # Build list of dates to search (one per day)
+        search_dates = []
+        current = start_date
+        while current <= end_date:
+            search_dates.append(current.strftime("%m/%d/%Y"))
+            current += timedelta(days=1)
+
+        log.info("Will search %d days x %d doc types = %d searches",
+                 len(search_dates), len(TARGET_DOC_TYPES),
+                 len(search_dates) * len(TARGET_DOC_TYPES))
+
+        # Step 4: Search each doc type for each day
         for doc_type_key, (cat, cat_label) in TARGET_DOC_TYPES.items():
             opt_value = option_lookup.get(doc_type_key.upper())
             if not opt_value:
                 log.warning("No match for '%s' -- skipping", doc_type_key)
                 continue
 
-            log.info("Searching: %s", doc_type_key)
-            try:
-                type_records = await _search_one_type(
-                    page, date_from, opt_value, doc_type_key, cat, cat_label
-                )
-                records.extend(type_records)
-                log.info("  -> %d records for %s", len(type_records), doc_type_key)
-            except Exception as exc:
-                log.warning("Failed %s: %s", doc_type_key, exc)
+            for search_date in search_dates:
+                try:
+                    day_records = await _search_one_type(
+                        page, search_date, opt_value, doc_type_key, cat, cat_label
+                    )
+                    if day_records:
+                        log.info("  %s | %s -> %d records",
+                                 search_date, doc_type_key, len(day_records))
+                        records.extend(day_records)
+                except Exception as exc:
+                    log.warning("Failed %s %s: %s", search_date, doc_type_key, exc)
 
-            await asyncio.sleep(2)
+                await asyncio.sleep(1)
 
         await browser.close()
 
@@ -169,58 +183,56 @@ async def scrape(date_from: str, date_to: str) -> list[dict]:
 
 
 async def _search_one_type(
-    page, date_from: str, opt_value: str,
+    page, search_date: str, opt_value: str,
     doc_type_label: str, cat: str, cat_label: str
 ) -> list[dict]:
     records: list[dict] = []
 
-    # Always start fresh at search form
+    # Start fresh at search form
     await page.goto(SEARCH_URL, timeout=30000, wait_until="networkidle")
-    await page.wait_for_timeout(2000)
+    await page.wait_for_timeout(1500)
     await page.wait_for_selector(DATE_FIELD, timeout=10000)
 
-    # Fill date
+    # Fill exact date
     try:
-        await page.fill(DATE_FIELD, date_from, timeout=5000)
-        await page.wait_for_timeout(500)
+        await page.fill(DATE_FIELD, search_date, timeout=5000)
+        await page.wait_for_timeout(300)
     except Exception as e:
         log.warning("Date fill failed: %s", e)
+        return records
 
     # Select doc type
     try:
         await page.select_option(DOC_DROPDOWN, value=opt_value, timeout=5000)
-        await page.wait_for_timeout(500)
+        await page.wait_for_timeout(300)
     except Exception as e:
         log.warning("Select failed: %s", e)
+        return records
 
-    # Click Search and wait for results URL
+    # Click Search
     try:
         await page.click(SEARCH_BTN, timeout=5000)
 
-        # Poll until URL contains SearchByMixedResults
+        # Wait for URL to become results page
         for _ in range(30):
             await page.wait_for_timeout(500)
             if "SearchByMixedResults" in page.url:
                 break
 
         await page.wait_for_load_state("networkidle", timeout=15000)
-        await page.wait_for_timeout(3000)
-
-        log.info("After search URL: %s", page.url)
-        row_count = await page.evaluate("document.querySelectorAll('tr').length")
-        log.info("Row count after search: %d", row_count)
-
-        # Log body text to see what results page contains
-        body_text = await page.inner_text("body")
-        log.info("Results body (first 300): %s", body_text[:300].replace("\n", " "))
+        await page.wait_for_timeout(1500)
 
     except Exception as e:
         log.warning("Search click failed: %s", e)
         return records
 
-    # Verify we are on results page
+    # Must be on results page
     if "SearchByMixedResults" not in page.url:
-        log.info("Did not reach results page -- URL: %s", page.url)
+        return records
+
+    # Check for no entries
+    body_text = await page.inner_text("body")
+    if "No Entries Found" in body_text:
         return records
 
     # Collect paginated results
@@ -230,7 +242,6 @@ async def _search_one_type(
         html = await page.content()
         page_records = parse_results_html(html, cat, cat_label, page.url)
         records.extend(page_records)
-        log.info("  Page %d: %d records parsed", page_num, len(page_records))
 
         next_btn = page.locator(
             "a:has-text('Next'), input[value='Next'], .next > a"
@@ -257,11 +268,7 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
     date_pat = re.compile(r"^\d{1,2}/\d{1,2}/\d{4}$")
     case_pat = re.compile(r"[A-Z]{1,4}-?\d{4}", re.I)
 
-    all_rows = soup.find_all("tr")
-    log.info("Total rows in page: %d", len(all_rows))
-
-    matched = 0
-    for row in all_rows:
+    for row in soup.find_all("tr"):
         cells = row.find_all(["td", "th"])
         if len(cells) < 3:
             continue
@@ -274,8 +281,6 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
             continue
         if not case_pat.search(c1):
             continue
-
-        matched += 1
 
         try:
             filed    = parse_date(c0)
@@ -301,8 +306,6 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
             if anchor:
                 clerk_url = urljoin(base_url, anchor["href"])
 
-            log.info("RECORD: %s | %s | %s", case_num, filed, caption[:60])
-
             records.append({
                 "doc_num":      case_num,
                 "doc_type":     normalize(cat_label),
@@ -325,9 +328,6 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
             })
         except Exception as exc:
             log.debug("Row error: %s", exc)
-
-    if matched == 0:
-        log.info("No rows matched date+case pattern out of %d total rows", len(all_rows))
 
     return records
 
@@ -472,12 +472,11 @@ async def main():
     start_date = end_date - timedelta(days=LOOKBACK_DAYS)
     fetched_at = datetime.now(timezone.utc).isoformat()
 
-    date_from = start_date.strftime("%m/%d/%Y")
-    date_to   = end_date.strftime("%m/%d/%Y")
+    log.info("Summit County Lead Scraper | %s -> %s",
+             start_date.strftime("%Y-%m-%d"),
+             end_date.strftime("%Y-%m-%d"))
 
-    log.info("Summit County Lead Scraper | %s -> %s", date_from, date_to)
-
-    raw = await scrape(date_from, date_to)
+    raw = await scrape(start_date, end_date)
     log.info("Raw records: %d", len(raw))
 
     seen: set[str] = set()
