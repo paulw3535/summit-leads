@@ -21,7 +21,6 @@ from bs4 import BeautifulSoup
 
 DISCLAIMER_PAGE = "https://clerk.summitoh.net/RecordsSearch/Disclaimer.asp?toPage=SelectDivision.asp"
 SEARCH_URL      = "https://clerk.summitoh.net/PublicSite/SearchByMixed.aspx"
-RESULTS_URL     = "https://clerk.summitoh.net/PublicSite/CivilSearchResults.aspx"
 CLERK_BASE      = "https://clerk.summitoh.net/PublicSite/"
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "7"))
@@ -194,35 +193,34 @@ async def _search_one_type(
     except Exception as e:
         log.warning("Select failed: %s", e)
 
-    # Click Search and wait for URL to change to results page
+    # Click Search and wait for results URL
     try:
         await page.click(SEARCH_BTN, timeout=5000)
 
-        # Wait up to 15 seconds for URL to change away from SearchByMixed
+        # Poll until URL contains SearchByMixedResults
         for _ in range(30):
             await page.wait_for_timeout(500)
-            current_url = page.url
-            if "SearchByMixed" not in current_url:
-                break
-            # Also check if page has more rows (results loaded)
-            row_count = await page.evaluate("document.querySelectorAll('tr').length")
-            if row_count > 20:
+            if "SearchByMixedResults" in page.url:
                 break
 
         await page.wait_for_load_state("networkidle", timeout=15000)
-        await page.wait_for_timeout(2000)
+        await page.wait_for_timeout(3000)
 
         log.info("After search URL: %s", page.url)
         row_count = await page.evaluate("document.querySelectorAll('tr').length")
         log.info("Row count after search: %d", row_count)
 
+        # Log body text to see what results page contains
+        body_text = await page.inner_text("body")
+        log.info("Results body (first 300): %s", body_text[:300].replace("\n", " "))
+
     except Exception as e:
         log.warning("Search click failed: %s", e)
         return records
 
-    # If still on search page, search failed silently
-    if "SearchByMixed" in page.url:
-        log.info("Still on search page -- no results")
+    # Verify we are on results page
+    if "SearchByMixedResults" not in page.url:
+        log.info("Did not reach results page -- URL: %s", page.url)
         return records
 
     # Collect paginated results
@@ -262,6 +260,7 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
     all_rows = soup.find_all("tr")
     log.info("Total rows in page: %d", len(all_rows))
 
+    matched = 0
     for row in all_rows:
         cells = row.find_all(["td", "th"])
         if len(cells) < 3:
@@ -275,6 +274,8 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
             continue
         if not case_pat.search(c1):
             continue
+
+        matched += 1
 
         try:
             filed    = parse_date(c0)
@@ -324,6 +325,9 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
             })
         except Exception as exc:
             log.debug("Row error: %s", exc)
+
+    if matched == 0:
+        log.info("No rows matched date+case pattern out of %d total rows", len(all_rows))
 
     return records
 
