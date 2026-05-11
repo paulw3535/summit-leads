@@ -1,11 +1,11 @@
 {
-  "fetched_at": "2026-05-10T10:48:34.980419+00:00",
+  "fetched_at": "2026-05-11T16:48:32.185377+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-05-03",
-    "to": "2026-05-10"
+    "from": "2026-05-04",
+    "to": "2026-05-11"
   },
-  "total": 373,
+  "total": 376,
   "with_address": 0,
   "records": [
     {
@@ -149,6 +149,84 @@
       "amount": null,
       "legal": "",
       "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-1996&Suffix=&Type=",
+      "prop_address": "",
+      "prop_city": "Summit County",
+      "prop_state": "OH",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "",
+      "mail_zip": "",
+      "score": 55,
+      "flags": [
+        "Pre-foreclosure",
+        "LLC / corp owner",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-05-2015",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-05-08",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "U.S. BANK TRUST NATIONAL ASSOCIATION, NO",
+      "grantee": "UNKNOWN HEIRS, LEGATEES AND DEVISEES OF GLORIA J. ROLLYSON",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-2015&Suffix=&Type=",
+      "prop_address": "",
+      "prop_city": "Summit County",
+      "prop_state": "OH",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "",
+      "mail_zip": "",
+      "score": 55,
+      "flags": [
+        "Pre-foreclosure",
+        "LLC / corp owner",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-05-2016",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-05-08",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "ROCKET MORTGAGE, LLC S/B/M NATIONSTAR MO",
+      "grantee": "REGINA C ANDERSON",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-2016&Suffix=&Type=",
+      "prop_address": "",
+      "prop_city": "Summit County",
+      "prop_state": "OH",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "",
+      "mail_zip": "",
+      "score": 55,
+      "flags": [
+        "Pre-foreclosure",
+        "LLC / corp owner",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-05-2017",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-05-08",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "MORTGAGE ASSETS MANAGEMENT, LLC F/K/A RE",
+      "grantee": "PATRICIA ANN MUSTER",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-2017&Suffix=&Type=",
       "prop_address": "",
       "prop_city": "Summit County",
       "prop_state": "OH",
