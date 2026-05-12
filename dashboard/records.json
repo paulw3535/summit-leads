@@ -1,39 +1,13 @@
 {
-  "fetched_at": "2026-05-11T16:48:32.185377+00:00",
+  "fetched_at": "2026-05-12T13:26:03.185595+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-05-04",
-    "to": "2026-05-11"
+    "from": "2026-05-05",
+    "to": "2026-05-12"
   },
-  "total": 376,
+  "total": 373,
   "with_address": 0,
   "records": [
-    {
-      "doc_num": "CV-2026-05-1928",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-05-04",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "SUN WEST MORTGAGE COMPANY, INC",
-      "grantee": "TY ALLEN BROWN",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-1928&Suffix=&Type=",
-      "prop_address": "",
-      "prop_city": "Summit County",
-      "prop_state": "OH",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "",
-      "mail_zip": "",
-      "score": 55,
-      "flags": [
-        "Pre-foreclosure",
-        "LLC / corp owner",
-        "New this week"
-      ]
-    },
     {
       "doc_num": "CV-2026-05-1958",
       "doc_type": "FORECLOSURE COMPLAINT",
@@ -239,56 +213,6 @@
       "flags": [
         "Pre-foreclosure",
         "LLC / corp owner",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-05-1920",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-05-04",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "THIRD FEDERAL SAVINGS AND LOAN ASSOCIATI",
-      "grantee": "LOUISE J GISSENDANER",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-1920&Suffix=&Type=",
-      "prop_address": "",
-      "prop_city": "Summit County",
-      "prop_state": "OH",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "",
-      "mail_zip": "",
-      "score": 45,
-      "flags": [
-        "Pre-foreclosure",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-05-1939",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-05-04",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "KRISTEN M SCALISE",
-      "grantee": "UNKNOWN HEIRS OF HAROLD E. MCCLASKEY",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-1939&Suffix=&Type=",
-      "prop_address": "",
-      "prop_city": "Summit County",
-      "prop_state": "OH",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "",
-      "mail_zip": "",
-      "score": 45,
-      "flags": [
-        "Pre-foreclosure",
         "New this week"
       ]
     },
