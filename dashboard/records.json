@@ -1,39 +1,13 @@
 {
-  "fetched_at": "2026-05-26T18:06:52.305130+00:00",
+  "fetched_at": "2026-05-27T18:08:02.294549+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-05-19",
-    "to": "2026-05-26"
+    "from": "2026-05-20",
+    "to": "2026-05-27"
   },
   "total": 162,
   "with_address": 0,
   "records": [
-    {
-      "doc_num": "CV-2026-05-2174",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-05-19",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "AURORA SHORES CONDOMINIUM TWO OWNERS ASSOC. INC.",
-      "grantee": "MICHAEL DUANE DORCAS",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-2174&Suffix=&Type=",
-      "prop_address": "",
-      "prop_city": "Summit County",
-      "prop_state": "OH",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "",
-      "mail_zip": "",
-      "score": 55,
-      "flags": [
-        "Pre-foreclosure",
-        "LLC / corp owner",
-        "New this week"
-      ]
-    },
     {
       "doc_num": "CV-2026-05-2186",
       "doc_type": "FORECLOSURE COMPLAINT",
@@ -478,6 +452,31 @@
       "amount": null,
       "legal": "",
       "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-2245&Suffix=&Type=",
+      "prop_address": "",
+      "prop_city": "Summit County",
+      "prop_state": "OH",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "",
+      "mail_zip": "",
+      "score": 45,
+      "flags": [
+        "Pre-foreclosure",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-05-2267",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-05-26",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "WELLS FARGO BANK NA",
+      "grantee": "NITA L SMALLS",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-2267&Suffix=&Type=",
       "prop_address": "",
       "prop_city": "Summit County",
       "prop_state": "OH",
