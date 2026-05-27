@@ -176,6 +176,12 @@ async def scrape(start_date: datetime, end_date: datetime) -> list[dict]:
 
                 await asyncio.sleep(1)
 
+        # Enrichment pass: visit each case detail page to grab property address
+        try:
+            await enrich_case_details(page, records)
+        except Exception as exc:
+            log.warning("Enrichment phase failed: %s", exc)
+
         await browser.close()
 
     log.info("Scrape complete: %d total records", len(records))
@@ -332,14 +338,144 @@ def parse_results_html(html: str, cat: str, cat_label: str, base_url: str) -> li
     return records
 
 
-def score_record(rec: dict, all_records: list[dict]) -> tuple[int, list[str]]:
+# ---------------------------------------------------------------------------
+# Case-detail enrichment: pull property address from CaseDetail.aspx
+# ---------------------------------------------------------------------------
+
+# Common street suffixes seen on Summit County filings
+_STREET_SUFFIXES = (
+    r"ST|AVE|RD|DR|BLVD|LN|CT|PL|WAY|CIR|PKWY|TRL|HWY|TER|"
+    r"STREET|AVENUE|ROAD|DRIVE|BOULEVARD|LANE|COURT|PLACE|"
+    r"CIRCLE|PARKWAY|TRAIL|HIGHWAY|TERRACE"
+)
+
+_ADDR_RE = re.compile(
+    # Street: number + 1..6 words + a suffix
+    r"(\d{1,6}\s+(?:[A-Za-z0-9.\-']+\s+){1,6}"
+    r"(?:" + _STREET_SUFFIXES + r"))\.?"
+    # Separator: any whitespace OR comma (no newline required -- Summit
+    # writes "3830 Nautilus Trail Aurora, OH 44202" on one line)
+    r"[\s,]+"
+    # City: starts with a letter, 2-40 chars
+    r"([A-Za-z][A-Za-z .'\-]{1,40}?)"
+    r"[\s,]+(?:OH|OHIO)\s+"
+    r"(\d{5}(?:-\d{4})?)",
+    re.IGNORECASE,
+)
+
+
+def extract_property_address(html: str, defendant: str) -> dict:
+    """Find the defendant's property address on a CaseDetail.aspx Parties page.
+
+    Strategy: isolate the DEFENDANT section, collect every street/city/zip
+    found in it, and pick the address that appears most often. Co-owner
+    defendants (spouse, joint owners) share the property address, while
+    lender / HOA / lien-holder defendants list their business addresses --
+    so frequency naturally promotes the property.
+    """
+    out = {
+        "prop_address": "", "prop_city": "", "prop_state": "OH", "prop_zip": "",
+        "mail_address": "", "mail_city": "", "mail_state": "", "mail_zip": "",
+    }
+
+    soup = BeautifulSoup(html, "lxml")
+    text = soup.get_text("\n", strip=False)
+
+    # Isolate the DEFENDANT block. On Summit's Parties page, the headers
+    # "DEFENDANT" and "DEFENDANT'S ATTORNEY" sit on adjacent lines (side-by-
+    # side table columns), so anchor on the attorney header to skip past
+    # both, then capture everything until the next section or end of page.
+    block_match = (
+        re.search(r"DEFENDANT'S\s+ATTORNEY\b(.*?)"
+                  r"(?=\bDOCKETS\b|\bJUDGES\b|\bSERVICE\b|\Z)",
+                  text, re.IGNORECASE | re.DOTALL)
+        or
+        re.search(r"\bDEFENDANT\b(.*?)"
+                  r"(?=\bDOCKETS\b|\bJUDGES\b|\bSERVICE\b|\Z)",
+                  text, re.IGNORECASE | re.DOTALL)
+    )
+    block = block_match.group(1) if block_match else text
+
+    # Find all addresses in the defendant block
+    from collections import Counter
+    found = []
+    for m in _ADDR_RE.finditer(block):
+        street = re.sub(r"\s+", " ", m.group(1)).strip().title()
+        city   = re.sub(r"\s+", " ", m.group(2)).strip().title()
+        zipc   = m.group(3).strip()
+        # Reject obvious courthouse / clerk addresses
+        if zipc.startswith("44308") and "HIGH" in street.upper():
+            continue
+        found.append((street, city, zipc))
+
+    if not found:
+        return out
+
+    # Most frequent address wins. Ties broken by first-seen order.
+    counter = Counter(found)
+    best, _count = counter.most_common(1)[0]
+
+    # Soft preference: if grantee's surname appears and an address sits
+    # right after it (within 200 chars), prefer that over plain frequency.
+    if defendant:
+        surname = defendant.upper().split()[-1] if defendant.split() else ""
+        if surname:
+            for m in re.finditer(re.escape(surname), block.upper()):
+                window = block[m.end(): m.end() + 250]
+                am = _ADDR_RE.search(window)
+                if am:
+                    street = re.sub(r"\s+", " ", am.group(1)).strip().title()
+                    city   = re.sub(r"\s+", " ", am.group(2)).strip().title()
+                    zipc   = am.group(3).strip()
+                    if not (zipc.startswith("44308") and "HIGH" in street.upper()):
+                        best = (street, city, zipc)
+                        break
+
+    out["prop_address"] = best[0]
+    out["prop_city"]    = best[1]
+    out["prop_zip"]     = best[2]
+    out["mail_address"] = best[0]
+    out["mail_city"]    = best[1]
+    out["mail_state"]   = "OH"
+    out["mail_zip"]     = best[2]
+    return out
+
+
+async def enrich_case_details(page, records: list[dict]) -> None:
+    """Visit each foreclosure case-detail page and fill in property address."""
+    targets = [r for r in records if r.get("cat") == "foreclosure" and r.get("clerk_url")]
+    log.info("Enriching %d foreclosure cases with property addresses ...", len(targets))
+
+    hits = 0
+    for i, rec in enumerate(targets, 1):
+        url = rec["clerk_url"]
+        try:
+            await page.goto(url, timeout=30000, wait_until="networkidle")
+            await page.wait_for_timeout(600)
+            html = await page.content()
+            addr = extract_property_address(html, rec.get("grantee", ""))
+            rec.update(addr)
+            if addr["prop_address"]:
+                hits += 1
+                if i % 10 == 0 or i == len(targets):
+                    log.info("  [%d/%d] enriched -- %d addresses found", i, len(targets), hits)
+        except Exception as exc:
+            log.warning("Enrich failed for %s: %s", rec.get("doc_num"), exc)
+        await asyncio.sleep(0.4)
+
+    log.info("Enrichment done: %d/%d addresses found", hits, len(targets))
+
+
+    """Score a record. The 'lead' is the GRANTEE (defendant) -- not the
+    OWNER field, which on civil filings is the plaintiff (a bank). Cross-doc
+    matching and entity-type flags must therefore key off grantee."""
     flags: list[str] = []
     score = 30
-    cat    = rec.get("cat", "")
-    dtype  = rec.get("doc_type", "")
-    owner  = rec.get("owner", "")
-    amount = rec.get("amount")
-    filed  = rec.get("filed", "")
+    cat     = rec.get("cat", "")
+    dtype   = rec.get("doc_type", "")
+    grantee = rec.get("grantee", "") or rec.get("owner", "")  # fallback for non-civil docs
+    amount  = rec.get("amount")
+    filed   = rec.get("filed", "")
 
     if cat == "foreclosure":
         flags.append("Pre-foreclosure")
@@ -360,16 +496,24 @@ def score_record(rec: dict, all_records: list[dict]) -> tuple[int, list[str]]:
 
     if cat == "probate":
         flags.append("Probate / estate")
-        score += 10
+        score += 15
 
     if cat == "bankruptcy":
         flags.append("Bankruptcy filed")
         score += 10
 
-    owner_docs = [r for r in all_records if r.get("owner") == owner and r is not rec]
-    if (any(r.get("cat") == "foreclosure" for r in owner_docs) and
-            any(r.get("cat") == "lien" for r in owner_docs)):
-        score += 20
+    # Cross-doc: same defendant appears in multiple distress categories -> hot
+    same_party = [
+        r for r in all_records
+        if r.get("grantee") and r.get("grantee") == grantee and r is not rec
+    ]
+    cats_seen = {r.get("cat") for r in same_party}
+    if "foreclosure" in cats_seen and "lien" in cats_seen:
+        flags.append("Multi-distress (foreclosure + lien)")
+        score += 25
+    elif len(cats_seen) >= 1:
+        flags.append("Multiple filings")
+        score += 10
 
     if amount:
         if amount > 100_000:
@@ -378,9 +522,17 @@ def score_record(rec: dict, all_records: list[dict]) -> tuple[int, list[str]]:
         elif amount > 50_000:
             score += 10
 
-    if owner and re.search(r"\b(LLC|INC|CORP|LTD|TRUST|ESTATE)\b", owner):
-        flags.append("LLC / corp owner")
-        score += 10
+    # Defendant entity type: individuals = motivated sellers, LLCs/trusts = not
+    is_entity = bool(grantee) and bool(
+        re.search(r"\b(LLC|INC|CORP|CORPORATION|LTD|TRUST|ESTATE OF|COMPANY|CO\.|ASSOC|ASSOCIATION|BANK|N\.A\.)\b",
+                  grantee.upper())
+    )
+    if grantee and not is_entity:
+        flags.append("Individual defendant")
+        score += 15
+    elif is_entity:
+        flags.append("Entity defendant (low priority)")
+        score -= 15
 
     try:
         if (datetime.now() - datetime.strptime(filed, "%Y-%m-%d")).days <= 7:
@@ -390,9 +542,10 @@ def score_record(rec: dict, all_records: list[dict]) -> tuple[int, list[str]]:
         pass
 
     if rec.get("prop_address"):
-        score += 5
+        flags.append("Address captured")
+        score += 10
 
-    return min(score, 100), flags
+    return max(0, min(score, 100)), flags
 
 
 GHL_FIELDS = [
@@ -401,6 +554,7 @@ GHL_FIELDS = [
     "Property Address", "Property City", "Property State", "Property Zip",
     "Lead Type", "Document Type", "Date Filed", "Document Number",
     "Amount/Debt Owed", "Seller Score", "Motivated Seller Flags",
+    "Plaintiff",
     "Source", "Public Records URL",
 ]
 
@@ -438,11 +592,26 @@ def write_outputs(records, fetched_at, start_date, end_date):
         log.info("Wrote %s", path)
 
     GHL_CSV.parent.mkdir(parents=True, exist_ok=True)
+    skipped_entity = 0
     with GHL_CSV.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=GHL_FIELDS)
         writer.writeheader()
         for rec in records:
-            first, last = _split_name(rec.get("owner", ""))
+            # The LEAD is the defendant (grantee). For non-civil records that
+            # have no grantee, fall back to owner.
+            lead_name = rec.get("grantee", "").strip() or rec.get("owner", "").strip()
+
+            # Skip pure-entity defendants — they're not motivated sellers.
+            # Keeps the CSV import-ready for GHL without garbage rows.
+            if lead_name and re.search(
+                r"\b(LLC|INC|CORP|CORPORATION|LTD|TRUST|COMPANY|CO\.|ASSOC|"
+                r"ASSOCIATION|BANK|N\.A\.|AGENCY|DEPARTMENT)\b",
+                lead_name.upper(),
+            ):
+                skipped_entity += 1
+                continue
+
+            first, last = _split_name(lead_name)
             writer.writerow({
                 "First Name":             first,
                 "Last Name":              last,
@@ -461,10 +630,12 @@ def write_outputs(records, fetched_at, start_date, end_date):
                 "Amount/Debt Owed":       rec.get("amount", ""),
                 "Seller Score":           rec.get("score", 0),
                 "Motivated Seller Flags": "; ".join(rec.get("flags", [])),
+                "Plaintiff":              rec.get("owner", ""),
                 "Source":                 "Summit County Clerk of Courts - Civil Division",
                 "Public Records URL":     rec.get("clerk_url", ""),
             })
-    log.info("Wrote GHL CSV: %s", GHL_CSV)
+    log.info("Wrote GHL CSV: %s (%d rows, skipped %d entity defendants)",
+             GHL_CSV, len(records) - skipped_entity, skipped_entity)
 
 
 async def main():
