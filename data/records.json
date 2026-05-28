@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-05-28T00:23:11.964144+00:00",
+  "fetched_at": "2026-05-28T18:22:29.862327+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
     "from": "2026-05-21",
     "to": "2026-05-28"
   },
-  "total": 157,
-  "with_address": 13,
+  "total": 159,
+  "with_address": 15,
   "records": [
     {
       "doc_num": "CV-2026-05-2199",
@@ -324,6 +324,60 @@
       "mail_city": "Akron",
       "mail_state": "OH",
       "mail_zip": "44320",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-05-2294",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-05-27",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "KRISTEN M SCALISE",
+      "grantee": "MARIANNE BELLAK AKA MARIANNE PARKER",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-2294&Suffix=&Type=",
+      "prop_address": "720 Saxon Avenue",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44314",
+      "mail_address": "720 Saxon Avenue",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44314",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-05-2307",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-05-28",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "FIFTH THIRD BANK, N.A.",
+      "grantee": "STACY L BRADLEY",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-2307&Suffix=&Type=",
+      "prop_address": "1065 Bloomfield Avenue",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44302",
+      "mail_address": "1065 Bloomfield Avenue",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44302",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
