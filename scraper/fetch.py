@@ -466,6 +466,8 @@ async def enrich_case_details(page, records: list[dict]) -> None:
     log.info("Enrichment done: %d/%d addresses found", hits, len(targets))
 
 
+def score_record(rec: dict, all_records: list[dict]) -> tuple[int, list[str]]:
+
     """Score a record. The 'lead' is the GRANTEE (defendant) -- not the
     OWNER field, which on civil filings is the plaintiff (a bank). Cross-doc
     matching and entity-type flags must therefore key off grantee."""
