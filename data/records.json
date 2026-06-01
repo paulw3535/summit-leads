@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-05-31T12:04:26.287923+00:00",
+  "fetched_at": "2026-06-01T21:08:12.771344+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-05-24",
-    "to": "2026-05-31"
+    "from": "2026-05-25",
+    "to": "2026-06-01"
   },
-  "total": 139,
-  "with_address": 9,
+  "total": 142,
+  "with_address": 12,
   "records": [
     {
       "doc_num": "CV-2026-05-2265",
@@ -216,6 +216,87 @@
       "mail_city": "Cuyahoga Falls",
       "mail_state": "OH",
       "mail_zip": "44221",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2330",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-05-29",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "FREEDOM MORTGAGE CORPORATION",
+      "grantee": "EMMANUEL MENSAH ASHONG, AS ADMINISTRATO",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2330&Suffix=&Type=",
+      "prop_address": "4276 E 163Rd Street",
+      "prop_city": "Cleveland",
+      "prop_state": "OH",
+      "prop_zip": "44128",
+      "mail_address": "4276 E 163Rd Street",
+      "mail_city": "Cleveland",
+      "mail_state": "OH",
+      "mail_zip": "44128",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2338",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-01",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "PARAMOUNT RESIDENTIAL MORTGAGE GROUP, IN",
+      "grantee": "KLARISSA STRICK-TAYLOR",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2338&Suffix=&Type=",
+      "prop_address": "194 Beck Avenue",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44302",
+      "mail_address": "194 Beck Avenue",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44302",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2343",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-01",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "PENNYMAC LOAN SERVICES, LLC",
+      "grantee": "VERONICA K GILCHRIST",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2343&Suffix=&Type=",
+      "prop_address": "584 Copley Rd",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44320",
+      "mail_address": "584 Copley Rd",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44320",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
