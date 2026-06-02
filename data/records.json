@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-06-01T21:08:12.771344+00:00",
+  "fetched_at": "2026-06-02T19:57:10.946639+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-05-25",
-    "to": "2026-06-01"
+    "from": "2026-05-26",
+    "to": "2026-06-02"
   },
-  "total": 142,
-  "with_address": 12,
+  "total": 144,
+  "with_address": 14,
   "records": [
     {
       "doc_num": "CV-2026-05-2265",
@@ -297,6 +297,60 @@
       "mail_city": "Akron",
       "mail_state": "OH",
       "mail_zip": "44320",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2349",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-02",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "FIFTH THIRD BANK, NATIONAL ASSOCIATION,",
+      "grantee": "AUSTIN HOLLOMAN RAWLS, PERSONALLY AND AS",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2349&Suffix=&Type=",
+      "prop_address": "1747 Curry Lane",
+      "prop_city": "Twinsburg",
+      "prop_state": "OH",
+      "prop_zip": "44087",
+      "mail_address": "1747 Curry Lane",
+      "mail_city": "Twinsburg",
+      "mail_state": "OH",
+      "mail_zip": "44087",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2355",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-02",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "UNION HOME MORTGAGE CORP.",
+      "grantee": "MASON WOODS",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2355&Suffix=&Type=",
+      "prop_address": "3962 Red Bank Road",
+      "prop_city": "Cincinnati",
+      "prop_state": "OH",
+      "prop_zip": "45227",
+      "mail_address": "3962 Red Bank Road",
+      "mail_city": "Cincinnati",
+      "mail_state": "OH",
+      "mail_zip": "45227",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
