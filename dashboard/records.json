@@ -1,67 +1,13 @@
 {
-  "fetched_at": "2026-06-03T20:04:35.869263+00:00",
+  "fetched_at": "2026-06-04T10:37:00.685050+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-05-27",
-    "to": "2026-06-03"
+    "from": "2026-05-28",
+    "to": "2026-06-04"
   },
-  "total": 147,
-  "with_address": 17,
+  "total": 144,
+  "with_address": 14,
   "records": [
-    {
-      "doc_num": "CV-2026-05-2279",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-05-27",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "WILMINGTON TRUST COMPANY AS SUCCESSOR TR",
-      "grantee": "DARLA R SPEARS",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-2279&Suffix=&Type=",
-      "prop_address": "570 Greenwood Ave",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44320",
-      "mail_address": "570 Greenwood Ave",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44320",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-05-2294",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-05-27",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "KRISTEN M SCALISE",
-      "grantee": "MARIANNE BELLAK AKA MARIANNE PARKER",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-2294&Suffix=&Type=",
-      "prop_address": "720 Saxon Avenue",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44314",
-      "mail_address": "720 Saxon Avenue",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44314",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
     {
       "doc_num": "CV-2026-05-2307",
       "doc_type": "FORECLOSURE COMPLAINT",
@@ -3638,33 +3584,6 @@
         "Tax lien",
         "Individual defendant",
         "New this week"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-05-2293",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-05-27",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "FIFTH THIRD BANK, NATIONAL ASSOCIATION F",
-      "grantee": "DANNETTE MCCARTY, INDIVIDUALLY AND AS EX TO THE ESTATE OF SUE E. POLING AKA SUE EILEEN ROBINSON",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-2293&Suffix=&Type=",
-      "prop_address": "188 Thorpe Street",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44304",
-      "mail_address": "188 Thorpe Street",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44304",
-      "score": 40,
-      "flags": [
-        "Pre-foreclosure",
-        "Entity defendant (low priority)",
-        "New this week",
-        "Address captured"
       ]
     },
     {
