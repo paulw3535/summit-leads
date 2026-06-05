@@ -1,94 +1,13 @@
 {
-  "fetched_at": "2026-06-04T10:37:00.685050+00:00",
+  "fetched_at": "2026-06-05T10:43:32.798657+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-05-28",
-    "to": "2026-06-04"
+    "from": "2026-05-29",
+    "to": "2026-06-05"
   },
-  "total": 144,
-  "with_address": 14,
+  "total": 143,
+  "with_address": 13,
   "records": [
-    {
-      "doc_num": "CV-2026-05-2307",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-05-28",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "FIFTH THIRD BANK, N.A.",
-      "grantee": "STACY L BRADLEY",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-2307&Suffix=&Type=",
-      "prop_address": "1065 Bloomfield Avenue",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44302",
-      "mail_address": "1065 Bloomfield Avenue",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44302",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-05-2316",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-05-28",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "MIDFIRST BANK",
-      "grantee": "GABRIELLE LESHAY BLACKMON",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-2316&Suffix=&Type=",
-      "prop_address": "579 Grace Avenue",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44320",
-      "mail_address": "579 Grace Avenue",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44320",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-05-2317",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-05-28",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "FIRST FEDERAL BANK",
-      "grantee": "MARK GACSY",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-05-2317&Suffix=&Type=",
-      "prop_address": "526 Taft Avenue",
-      "prop_city": "Barberton",
-      "prop_state": "OH",
-      "prop_zip": "44203",
-      "mail_address": "526 Taft Avenue",
-      "mail_city": "Barberton",
-      "mail_state": "OH",
-      "mail_zip": "44203",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
     {
       "doc_num": "CV-2026-05-2323",
       "doc_type": "FORECLOSURE COMPLAINT",
@@ -378,6 +297,33 @@
       "mail_city": "Akron",
       "mail_state": "OH",
       "mail_zip": "44310",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2396",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-04",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "LAKEVIEW LOAN SERVICING, LLC",
+      "grantee": "BRIAN JARZENSKI",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2396&Suffix=&Type=",
+      "prop_address": "3693 Yellow Creek Rd",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44333",
+      "mail_address": "3693 Yellow Creek Rd",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44333",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
@@ -3584,6 +3530,33 @@
         "Tax lien",
         "Individual defendant",
         "New this week"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2390",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-03",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "J.P. MORGAN MORTGAGE TRUST 2025-DSC2 C/O",
+      "grantee": "C&B CLEVE LLC",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2390&Suffix=&Type=",
+      "prop_address": "495 Wolf Ledges Pkwy",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44311",
+      "mail_address": "495 Wolf Ledges Pkwy",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44311",
+      "score": 40,
+      "flags": [
+        "Pre-foreclosure",
+        "Entity defendant (low priority)",
+        "New this week",
+        "Address captured"
       ]
     },
     {
