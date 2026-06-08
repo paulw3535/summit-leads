@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-06-07T09:57:32.762284+00:00",
+  "fetched_at": "2026-06-08T11:52:44.891730+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-05-31",
-    "to": "2026-06-07"
+    "from": "2026-06-01",
+    "to": "2026-06-08"
   },
-  "total": 152,
-  "with_address": 13,
+  "total": 154,
+  "with_address": 15,
   "records": [
     {
       "doc_num": "CV-2026-06-2338",
@@ -324,6 +324,60 @@
       "mail_city": "Barberton",
       "mail_state": "OH",
       "mail_zip": "44203",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2417",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-05",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "PNC BANK, NATIONAL ASSOCIATION",
+      "grantee": "SCOTT MCDONALD",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2417&Suffix=&Type=",
+      "prop_address": "519 Mohawk Avenue",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44305",
+      "mail_address": "519 Mohawk Avenue",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44305",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2418",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-05",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "CARRINGTON MORTGAGE SERVICES LLC",
+      "grantee": "PHELVAREE X SMITH",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2418&Suffix=&Type=",
+      "prop_address": "1661 Centerview Drive",
+      "prop_city": "Copley",
+      "prop_state": "OH",
+      "prop_zip": "44321",
+      "mail_address": "1661 Centerview Drive",
+      "mail_city": "Copley",
+      "mail_state": "OH",
+      "mail_zip": "44321",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
