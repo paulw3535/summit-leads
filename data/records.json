@@ -1,67 +1,13 @@
 {
-  "fetched_at": "2026-06-08T11:52:44.891730+00:00",
+  "fetched_at": "2026-06-09T10:31:41.383304+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-06-01",
-    "to": "2026-06-08"
+    "from": "2026-06-02",
+    "to": "2026-06-09"
   },
-  "total": 154,
-  "with_address": 15,
+  "total": 152,
+  "with_address": 13,
   "records": [
-    {
-      "doc_num": "CV-2026-06-2338",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-06-01",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "PARAMOUNT RESIDENTIAL MORTGAGE GROUP, IN",
-      "grantee": "KLARISSA STRICK-TAYLOR",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2338&Suffix=&Type=",
-      "prop_address": "194 Beck Avenue",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44302",
-      "mail_address": "194 Beck Avenue",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44302",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-06-2343",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-06-01",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "PENNYMAC LOAN SERVICES, LLC",
-      "grantee": "VERONICA K GILCHRIST",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2343&Suffix=&Type=",
-      "prop_address": "584 Copley Rd",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44320",
-      "mail_address": "584 Copley Rd",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44320",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
     {
       "doc_num": "CV-2026-06-2349",
       "doc_type": "FORECLOSURE COMPLAINT",
