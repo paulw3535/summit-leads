@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-06-24T10:17:54.924650+00:00",
+  "fetched_at": "2026-06-25T10:13:26.489178+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-06-17",
-    "to": "2026-06-24"
+    "from": "2026-06-18",
+    "to": "2026-06-25"
   },
-  "total": 244,
-  "with_address": 11,
+  "total": 249,
+  "with_address": 15,
   "records": [
     {
       "doc_num": "CV-2026-06-2618",
@@ -270,6 +270,87 @@
       "mail_city": "Akron",
       "mail_state": "OH",
       "mail_zip": "44319",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2688",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-23",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "HSBC BANK USA, NATIONAL ASSOCIATION AS T",
+      "grantee": "PAUL B WOODWARD",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2688&Suffix=&Type=",
+      "prop_address": "1086 Florida Ave",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44314",
+      "mail_address": "1086 Florida Ave",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44314",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2704",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-23",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "US BANK NATIONAL ASSOCIATION",
+      "grantee": "NETHANIEL M HARRIS",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2704&Suffix=&Type=",
+      "prop_address": "586 E Ave",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44320",
+      "mail_address": "586 E Ave",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44320",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2706",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-24",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "M&T BANK",
+      "grantee": "ANDREW C. TODOR",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2706&Suffix=&Type=",
+      "prop_address": "776 North Summit Street",
+      "prop_city": "Barberton",
+      "prop_state": "OH",
+      "prop_zip": "44203",
+      "mail_address": "776 North Summit Street",
+      "mail_city": "Barberton",
+      "mail_state": "OH",
+      "mail_zip": "44203",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
@@ -4271,6 +4352,33 @@
       ]
     },
     {
+      "doc_num": "CV-2026-06-2705",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-24",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "SERVBANK, N.A.",
+      "grantee": "BLAKE R. GERNEY FIDUCIARY TO THE ESTATE OF TERI L",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2705&Suffix=&Type=",
+      "prop_address": "75 E. Market Street",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44708",
+      "mail_address": "75 E. Market Street",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44708",
+      "score": 40,
+      "flags": [
+        "Pre-foreclosure",
+        "Entity defendant (low priority)",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
       "doc_num": "JL-2026-8038",
       "doc_type": "STATE TAX LIEN FILED",
       "filed": "2026-06-19",
@@ -4914,6 +5022,32 @@
       "flags": [
         "Tax lien",
         "Multiple filings",
+        "Entity defendant (low priority)",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2696",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-23",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "US BANK TRUST NATIONAL ASSOCIATION",
+      "grantee": "CRG FAMILIES LLC",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2696&Suffix=&Type=",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "OH",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Pre-foreclosure",
         "Entity defendant (low priority)",
         "New this week"
       ]
