@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-06-28T09:55:38.866888+00:00",
+  "fetched_at": "2026-06-29T11:54:58.057420+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-06-21",
-    "to": "2026-06-28"
+    "from": "2026-06-22",
+    "to": "2026-06-29"
   },
-  "total": 120,
-  "with_address": 13,
+  "total": 121,
+  "with_address": 14,
   "records": [
     {
       "doc_num": "CV-2026-06-2666",
@@ -297,6 +297,33 @@
       "mail_city": "Stow",
       "mail_state": "OH",
       "mail_zip": "44224",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2771",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-26",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "PENNYMAC LOAN SERVICES, LLC",
+      "grantee": "PATRICIA RINGHOLM ANDERSON",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2771&Suffix=&Type=",
+      "prop_address": "458 Newton Street",
+      "prop_city": "Tallmadge",
+      "prop_state": "OH",
+      "prop_zip": "44278",
+      "mail_address": "458 Newton Street",
+      "mail_city": "Tallmadge",
+      "mail_state": "OH",
+      "mail_zip": "44278",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
