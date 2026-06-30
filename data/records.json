@@ -1,40 +1,13 @@
 {
-  "fetched_at": "2026-06-29T11:54:58.057420+00:00",
+  "fetched_at": "2026-06-30T10:28:59.848276+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-06-22",
-    "to": "2026-06-29"
+    "from": "2026-06-23",
+    "to": "2026-06-30"
   },
-  "total": 121,
-  "with_address": 14,
+  "total": 122,
+  "with_address": 16,
   "records": [
-    {
-      "doc_num": "CV-2026-06-2666",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-06-22",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "NEWREZ LLC D/B/A SHELLPOINT MORTGAGE SER",
-      "grantee": "ESTHER L PEREZ",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2666&Suffix=&Type=",
-      "prop_address": "60 Old Plank Ln",
-      "prop_city": "Chagrin Falls",
-      "prop_state": "OH",
-      "prop_zip": "44022",
-      "mail_address": "60 Old Plank Ln",
-      "mail_city": "Chagrin Falls",
-      "mail_state": "OH",
-      "mail_zip": "44022",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
     {
       "doc_num": "CV-2026-06-2679",
       "doc_type": "FORECLOSURE COMPLAINT",
@@ -324,6 +297,87 @@
       "mail_city": "Tallmadge",
       "mail_state": "OH",
       "mail_zip": "44278",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2777",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-29",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "GLENCAIRN FOREST HOMEOWNERS' ASSOCIATION",
+      "grantee": "LAWRENCE P. DEDOR",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2777&Suffix=&Type=",
+      "prop_address": "3465 Bannockburn Drive",
+      "prop_city": "Richfield",
+      "prop_state": "OH",
+      "prop_zip": "44286",
+      "mail_address": "3465 Bannockburn Drive",
+      "mail_city": "Richfield",
+      "mail_state": "OH",
+      "mail_zip": "44286",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2779",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-29",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "CROSSCOUNTRY MORTGAGE LLC",
+      "grantee": "BRANDON R GOWER",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2779&Suffix=&Type=",
+      "prop_address": "3231 Brentwood Dr",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44312",
+      "mail_address": "3231 Brentwood Dr",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44312",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-06-2780",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-06-29",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "TOWPATH CREDIT UNION",
+      "grantee": "KAREN E. JOHNSON",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2780&Suffix=&Type=",
+      "prop_address": "1620 Girard Street",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44301",
+      "mail_address": "1620 Girard Street",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44301",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
@@ -841,32 +895,6 @@
       "flags": [
         "Tax lien",
         "Multiple filings",
-        "Individual defendant",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-06-2672",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-06-22",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "COUNTRY CLUB APARTMENT HOMES-NORTH",
-      "grantee": "CHRISTOPHER DAVIS",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-06-2672&Suffix=&Type=",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "OH",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "",
-      "mail_zip": "",
-      "score": 60,
-      "flags": [
-        "Pre-foreclosure",
         "Individual defendant",
         "New this week"
       ]
