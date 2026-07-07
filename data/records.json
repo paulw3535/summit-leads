@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-07-07T10:22:00.010313+00:00",
+  "fetched_at": "2026-07-07T15:49:44.155628+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
     "from": "2026-06-30",
     "to": "2026-07-07"
   },
-  "total": 109,
-  "with_address": 15,
+  "total": 111,
+  "with_address": 17,
   "records": [
     {
       "doc_num": "CV-2026-06-2800",
@@ -351,6 +351,60 @@
       "mail_city": "Stow",
       "mail_state": "OH",
       "mail_zip": "44224",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-07-2894",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-07-06",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "U.S. BANK NATIONAL ASSOCIATION",
+      "grantee": "TROY D. LANCE",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-2894&Suffix=&Type=",
+      "prop_address": "406 Gibbs Road",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44312",
+      "mail_address": "406 Gibbs Road",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44312",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-07-2895",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-07-06",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "U.S. BANK NATIONAL ASSOCIATION",
+      "grantee": "ROSS EDWARD PAYTON SMOOT",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-2895&Suffix=&Type=",
+      "prop_address": "3962 Red Bank Road",
+      "prop_city": "Cincinnati",
+      "prop_state": "OH",
+      "prop_zip": "45227",
+      "mail_address": "3962 Red Bank Road",
+      "mail_city": "Cincinnati",
+      "mail_state": "OH",
+      "mail_zip": "45227",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
