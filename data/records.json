@@ -1,94 +1,13 @@
 {
-  "fetched_at": "2026-07-13T10:19:22.884989+00:00",
+  "fetched_at": "2026-07-14T09:01:46.086734+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-07-06",
-    "to": "2026-07-13"
+    "from": "2026-07-07",
+    "to": "2026-07-14"
   },
-  "total": 60,
-  "with_address": 16,
+  "total": 57,
+  "with_address": 12,
   "records": [
-    {
-      "doc_num": "CV-2026-07-2883",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-07-06",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "FIFTH THIRD BANK, NATIONAL ASSOCIATION F",
-      "grantee": "MATTHEW R PLACKO",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-2883&Suffix=&Type=",
-      "prop_address": "2692 Serra Vista Drive",
-      "prop_city": "Stow",
-      "prop_state": "OH",
-      "prop_zip": "44224",
-      "mail_address": "2692 Serra Vista Drive",
-      "mail_city": "Stow",
-      "mail_state": "OH",
-      "mail_zip": "44224",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-07-2894",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-07-06",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "U.S. BANK NATIONAL ASSOCIATION",
-      "grantee": "TROY D. LANCE",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-2894&Suffix=&Type=",
-      "prop_address": "406 Gibbs Road",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44312",
-      "mail_address": "406 Gibbs Road",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44312",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-07-2895",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-07-06",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "U.S. BANK NATIONAL ASSOCIATION",
-      "grantee": "ROSS EDWARD PAYTON SMOOT",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-2895&Suffix=&Type=",
-      "prop_address": "3962 Red Bank Road",
-      "prop_city": "Cincinnati",
-      "prop_state": "OH",
-      "prop_zip": "45227",
-      "mail_address": "3962 Red Bank Road",
-      "mail_city": "Cincinnati",
-      "mail_state": "OH",
-      "mail_zip": "45227",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
     {
       "doc_num": "CV-2026-07-2905",
       "doc_type": "FORECLOSURE COMPLAINT",
@@ -343,11 +262,11 @@
       "amount": null,
       "legal": "",
       "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-2976&Suffix=&Type=",
-      "prop_address": "1034 Lindsey Ave",
+      "prop_address": "1034 Lindsay Ave",
       "prop_city": "Akron",
       "prop_state": "OH",
       "prop_zip": "44306",
-      "mail_address": "1034 Lindsey Ave",
+      "mail_address": "1034 Lindsay Ave",
       "mail_city": "Akron",
       "mail_state": "OH",
       "mail_zip": "44306",
@@ -1506,33 +1425,6 @@
       ]
     },
     {
-      "doc_num": "CV-2026-07-2892",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-07-06",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "DONALD HESS",
-      "grantee": "TXS PROPERTY SERVICES, LLC",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-2892&Suffix=&Type=",
-      "prop_address": "71 Cotter Avenue",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44305",
-      "mail_address": "71 Cotter Avenue",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44305",
-      "score": 40,
-      "flags": [
-        "Pre-foreclosure",
-        "Entity defendant (low priority)",
-        "New this week",
-        "Address captured"
-      ]
-    },
-    {
       "doc_num": "CV-2026-07-2904",
       "doc_type": "FORECLOSURE COMPLAINT",
       "filed": "2026-07-07",
@@ -1584,6 +1476,32 @@
         "Entity defendant (low priority)",
         "New this week",
         "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-07-2996",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-07-13",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "U.S. BANK TRUST NATIONAL ASSOCIATION, NO",
+      "grantee": "THE GEBRAEL COMPANIES, LLC",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-2996&Suffix=&Type=",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "OH",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Pre-foreclosure",
+        "Entity defendant (low priority)",
+        "New this week"
       ]
     }
   ]
