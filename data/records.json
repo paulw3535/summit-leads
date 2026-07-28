@@ -1,67 +1,13 @@
 {
-  "fetched_at": "2026-07-27T10:37:04.434389+00:00",
+  "fetched_at": "2026-07-28T09:32:35.122080+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-07-20",
-    "to": "2026-07-27"
+    "from": "2026-07-21",
+    "to": "2026-07-28"
   },
-  "total": 99,
+  "total": 100,
   "with_address": 5,
   "records": [
-    {
-      "doc_num": "CV-2026-07-3103",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-07-20",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "U.S. BANK NATIONAL ASSOCIATION",
-      "grantee": "HEATHER PRESSLER",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-3103&Suffix=&Type=",
-      "prop_address": "2693 Chelsea Drive",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44312",
-      "mail_address": "2693 Chelsea Drive",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44312",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-07-3113",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-07-20",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "MIDFIRST BANK",
-      "grantee": "JENNIFER R. PEARSON",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-3113&Suffix=&Type=",
-      "prop_address": "3935 Stonebridge Blvd",
-      "prop_city": "Copley",
-      "prop_state": "OH",
-      "prop_zip": "44321",
-      "mail_address": "3935 Stonebridge Blvd",
-      "mail_city": "Copley",
-      "mail_state": "OH",
-      "mail_zip": "44321",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
     {
       "doc_num": "CV-2026-07-3126",
       "doc_type": "FORECLOSURE COMPLAINT",
@@ -135,6 +81,60 @@
       "mail_city": "Macedonia",
       "mail_state": "OH",
       "mail_zip": "44056",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-07-3174",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-07-24",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "FIFTH THIRD BANK NATIONAL ASSOCIATION",
+      "grantee": "MICHAEL F. SULLIVAN",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-3174&Suffix=&Type=",
+      "prop_address": "881 Silverberry Lane",
+      "prop_city": "Hudson",
+      "prop_state": "OH",
+      "prop_zip": "44236",
+      "mail_address": "881 Silverberry Lane",
+      "mail_city": "Hudson",
+      "mail_state": "OH",
+      "mail_zip": "44236",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-07-3182",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-07-24",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "U.S. BANK NATIONAL ASSOCIATION",
+      "grantee": "BRIAN W. BLINN",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-3182&Suffix=&Type=",
+      "prop_address": "2300 Nagel Road",
+      "prop_city": "Avon",
+      "prop_state": "OH",
+      "prop_zip": "44011",
+      "mail_address": "2300 Nagel Road",
+      "mail_city": "Avon",
+      "mail_state": "OH",
+      "mail_zip": "44011",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
@@ -2586,6 +2586,32 @@
       "flags": [
         "Tax lien",
         "Individual defendant",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-07-3181",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-07-24",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "KS STATEBANK",
+      "grantee": "M&M RE HOLDINGS LLC",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-3181&Suffix=&Type=",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "OH",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Pre-foreclosure",
+        "Entity defendant (low priority)",
         "New this week"
       ]
     }
