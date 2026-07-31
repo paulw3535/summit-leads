@@ -1,40 +1,13 @@
 {
-  "fetched_at": "2026-07-30T09:26:42.719279+00:00",
+  "fetched_at": "2026-07-31T09:39:01.727289+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-07-23",
-    "to": "2026-07-30"
+    "from": "2026-07-24",
+    "to": "2026-07-31"
   },
-  "total": 108,
-  "with_address": 12,
+  "total": 109,
+  "with_address": 13,
   "records": [
-    {
-      "doc_num": "CV-2026-07-3152",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-07-23",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "HUNTSFORD FARMS HOMEOWNERS ASSOCIATION",
-      "grantee": "BERNARD J. HYLAND",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-3152&Suffix=&Type=",
-      "prop_address": "8632 Robinwood Terrace",
-      "prop_city": "Macedonia",
-      "prop_state": "OH",
-      "prop_zip": "44056",
-      "mail_address": "8632 Robinwood Terrace",
-      "mail_city": "Macedonia",
-      "mail_state": "OH",
-      "mail_zip": "44056",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
     {
       "doc_num": "CV-2026-07-3174",
       "doc_type": "FORECLOSURE COMPLAINT",
@@ -324,6 +297,60 @@
       "mail_city": "Akron",
       "mail_state": "OH",
       "mail_zip": "44313",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-07-3244",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-07-29",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "PNC BANK, NATIONAL ASSOCIATION",
+      "grantee": "JAMES MURRAY",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-3244&Suffix=&Type=",
+      "prop_address": "1931 Bridger Rd",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44312",
+      "mail_address": "1931 Bridger Rd",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44312",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-07-3259",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-07-30",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "PENNYMAC LOAN SERVICES, LLC",
+      "grantee": "NANCY LUND",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-3259&Suffix=&Type=",
+      "prop_address": "2971 Pikes Avenue",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44314",
+      "mail_address": "2971 Pikes Avenue",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44314",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
