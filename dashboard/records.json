@@ -1,40 +1,13 @@
 {
-  "fetched_at": "2026-08-03T10:44:34.495374+00:00",
+  "fetched_at": "2026-08-04T09:36:07.192250+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-07-27",
-    "to": "2026-08-03"
+    "from": "2026-07-28",
+    "to": "2026-08-04"
   },
-  "total": 18,
-  "with_address": 15,
+  "total": 21,
+  "with_address": 17,
   "records": [
-    {
-      "doc_num": "CV-2026-07-3202",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-07-27",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "PENNYMAC LOAN SERVICES, LLC",
-      "grantee": "MARK A. CRINE",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-07-3202&Suffix=&Type=",
-      "prop_address": "1174 Lily Avenue",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44301",
-      "mail_address": "1174 Lily Avenue",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44301",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
     {
       "doc_num": "CV-2026-07-3213",
       "doc_type": "FORECLOSURE COMPLAINT",
@@ -414,6 +387,87 @@
       ]
     },
     {
+      "doc_num": "CV-2026-08-3285",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-07-31",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "PENNYMAC LOAN SERVICES, LLC",
+      "grantee": "BRIAN GILD",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-08-3285&Suffix=&Type=",
+      "prop_address": "1364 Arnold Ave",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44305",
+      "mail_address": "1364 Arnold Ave",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44305",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-08-3297",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-08-03",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "LAKEVIEW LOAN SERVICING LLC",
+      "grantee": "KATRINA D HAGOOD",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-08-3297&Suffix=&Type=",
+      "prop_address": "1041 Clyde Ave",
+      "prop_city": "Cuyahoga Falls",
+      "prop_state": "OH",
+      "prop_zip": "44221",
+      "mail_address": "1041 Clyde Ave",
+      "mail_city": "Cuyahoga Falls",
+      "mail_state": "OH",
+      "mail_zip": "44221",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-08-3303",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-08-03",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "U.S. BANK NATIONAL ASSOCIATION",
+      "grantee": "KELLY HAMM",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-08-3303&Suffix=&Type=",
+      "prop_address": "2439 Clara St",
+      "prop_city": "Cuyahoga Falls",
+      "prop_state": "OH",
+      "prop_zip": "44221",
+      "mail_address": "2439 Clara St",
+      "mail_city": "Cuyahoga Falls",
+      "mail_state": "OH",
+      "mail_zip": "44221",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
       "doc_num": "CV-2026-07-3274",
       "doc_type": "FORECLOSURE COMPLAINT",
       "filed": "2026-07-30",
@@ -488,6 +542,32 @@
       "flags": [
         "Tax lien",
         "Individual defendant",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-08-3298",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-07-31",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "METROPOLITAN TOWER LIFE INSURANCE COMPAN",
+      "grantee": "OHA CAPITAL LLC, AN OHIO LIMITED LIABILI",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-08-3298&Suffix=&Type=",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "OH",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Pre-foreclosure",
+        "Entity defendant (low priority)",
         "New this week"
       ]
     }
