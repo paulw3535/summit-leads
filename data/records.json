@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-08-22T07:26:14.351929+00:00",
+  "fetched_at": "2026-08-23T07:28:18.852409+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-08-15",
-    "to": "2026-08-22"
+    "from": "2026-08-16",
+    "to": "2026-08-23"
   },
-  "total": 229,
-  "with_address": 34,
+  "total": 228,
+  "with_address": 33,
   "records": [
     {
       "doc_num": "CV-2026-08-3549",
@@ -5926,33 +5926,6 @@
         "Tax lien",
         "Individual defendant",
         "New this week"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-08-3546",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-08-15",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "BUCHTEL PLACE HOMEOWNERS ASSOCIATION, NC",
-      "grantee": "CROSSCOUNTRY MORTGAGE, LLC",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-08-3546&Suffix=&Type=",
-      "prop_address": "3580 Darrow Road",
-      "prop_city": "Stow",
-      "prop_state": "OH",
-      "prop_zip": "44224",
-      "mail_address": "3580 Darrow Road",
-      "mail_city": "Stow",
-      "mail_state": "OH",
-      "mail_zip": "44224",
-      "score": 40,
-      "flags": [
-        "Pre-foreclosure",
-        "Entity defendant (low priority)",
-        "New this week",
-        "Address captured"
       ]
     },
     {
