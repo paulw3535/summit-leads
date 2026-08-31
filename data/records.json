@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-08-30T12:30:05.100423+00:00",
+  "fetched_at": "2026-08-31T14:44:59.039592+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-08-23",
-    "to": "2026-08-30"
+    "from": "2026-08-24",
+    "to": "2026-08-31"
   },
-  "total": 175,
-  "with_address": 18,
+  "total": 177,
+  "with_address": 20,
   "records": [
     {
       "doc_num": "CV-2026-08-3695",
@@ -459,6 +459,33 @@
       "mail_city": "Akron",
       "mail_state": "OH",
       "mail_zip": "44308",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-08-3781",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-08-31",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "KRISTEN M. SCALISE",
+      "grantee": "LOIS JEAN SHARP, SUCCESSOR TRUSTEE OF TH",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-08-3781&Suffix=&Type=",
+      "prop_address": "224 W Glenridge Rd",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44319",
+      "mail_address": "224 W Glenridge Rd",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44319",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
@@ -4570,6 +4597,33 @@
       "mail_city": "Solon",
       "mail_state": "OH",
       "mail_zip": "44139",
+      "score": 40,
+      "flags": [
+        "Pre-foreclosure",
+        "Entity defendant (low priority)",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-08-3778",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-08-28",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "TOPSTONE INV FUND1, LLC",
+      "grantee": "TOPSTONE INVESTMENT, LLC",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-08-3778&Suffix=&Type=",
+      "prop_address": "312 Elm Street",
+      "prop_city": "Cincinnati",
+      "prop_state": "OH",
+      "prop_zip": "45202",
+      "mail_address": "312 Elm Street",
+      "mail_city": "Cincinnati",
+      "mail_state": "OH",
+      "mail_zip": "45202",
       "score": 40,
       "flags": [
         "Pre-foreclosure",
