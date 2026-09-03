@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-09-03T11:52:52.876482+00:00",
+  "fetched_at": "2026-09-03T14:51:50.920018+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
     "from": "2026-08-27",
     "to": "2026-09-03"
   },
-  "total": 172,
-  "with_address": 15,
+  "total": 174,
+  "with_address": 17,
   "records": [
     {
       "doc_num": "CV-2026-08-3753",
@@ -243,6 +243,60 @@
       "mail_city": "Akron",
       "mail_state": "OH",
       "mail_zip": "44306",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-09-3844",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-09-02",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "U.S. BANK TRUST NATIONAL ASSOCIATION",
+      "grantee": "AUBRAY STALLWORTH, PERSONAL REPRESENTATI",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-09-3844&Suffix=&Type=",
+      "prop_address": "1280 Bee Bee Cir",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44305",
+      "mail_address": "1280 Bee Bee Cir",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44305",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-09-3846",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-09-02",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "FREEDOM MORTGAGE CORPORATION",
+      "grantee": "TULA DHAN RAI",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-09-3846&Suffix=&Type=",
+      "prop_address": "1524 Bancroft Street",
+      "prop_city": "Cuyahoga Falls",
+      "prop_state": "OH",
+      "prop_zip": "44221",
+      "mail_address": "1524 Bancroft Street",
+      "mail_city": "Cuyahoga Falls",
+      "mail_state": "OH",
+      "mail_zip": "44221",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
