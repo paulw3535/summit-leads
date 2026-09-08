@@ -1,67 +1,13 @@
 {
-  "fetched_at": "2026-09-07T13:12:58.527829+00:00",
+  "fetched_at": "2026-09-08T11:56:16.062473+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-08-31",
-    "to": "2026-09-07"
+    "from": "2026-09-01",
+    "to": "2026-09-08"
   },
-  "total": 91,
-  "with_address": 19,
+  "total": 88,
+  "with_address": 16,
   "records": [
-    {
-      "doc_num": "CV-2026-08-3781",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-08-31",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "KRISTEN M. SCALISE",
-      "grantee": "LOIS JEAN SHARP, SUCCESSOR TRUSTEE OF TH",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-08-3781&Suffix=&Type=",
-      "prop_address": "224 W Glenridge Rd",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44319",
-      "mail_address": "224 W Glenridge Rd",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44319",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-09-3799",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-08-31",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "CROSSCOUNTRY MORTGAGE, LLC",
-      "grantee": "DENNIS W PETTY",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-09-3799&Suffix=&Type=",
-      "prop_address": "1210 Lily Street",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44301",
-      "mail_address": "1210 Lily Street",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44301",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
     {
       "doc_num": "CV-2026-09-3823",
       "doc_type": "FORECLOSURE COMPLAINT",
@@ -378,6 +324,33 @@
       "mail_city": "Akron",
       "mail_state": "OH",
       "mail_zip": "44320",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-09-3893",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-09-04",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "THIRD FEDERAL SAVINGS AND LOAN ASSOCIATI",
+      "grantee": "TERRENCE J DUFFEY",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-09-3893&Suffix=&Type=",
+      "prop_address": "7007 Broadway Avenue",
+      "prop_city": "Cleveland",
+      "prop_state": "OH",
+      "prop_zip": "44105",
+      "mail_address": "7007 Broadway Avenue",
+      "mail_city": "Cleveland",
+      "mail_state": "OH",
+      "mail_zip": "44105",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
@@ -2259,60 +2232,6 @@
         "Tax lien",
         "Individual defendant",
         "New this week"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-08-3789",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-08-31",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "U.S. BANK TRUST NATIONAL ASSOCIATION, NO",
-      "grantee": "BANK OF AMERICA, NA",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-08-3789&Suffix=&Type=",
-      "prop_address": "4247 Landsbury Ct",
-      "prop_city": "Copley",
-      "prop_state": "OH",
-      "prop_zip": "44321",
-      "mail_address": "4247 Landsbury Ct",
-      "mail_city": "Copley",
-      "mail_state": "OH",
-      "mail_zip": "44321",
-      "score": 40,
-      "flags": [
-        "Pre-foreclosure",
-        "Entity defendant (low priority)",
-        "New this week",
-        "Address captured"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-08-3794",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-08-31",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "WILMINGTON SAVINGS FUND SOCIETY, FSB, NO",
-      "grantee": "KAPITAL ENTERPRISES LLC",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-08-3794&Suffix=&Type=",
-      "prop_address": "6339 Dogwood Lane",
-      "prop_city": "North Ridgeville",
-      "prop_state": "OH",
-      "prop_zip": "44039",
-      "mail_address": "6339 Dogwood Lane",
-      "mail_city": "North Ridgeville",
-      "mail_state": "OH",
-      "mail_zip": "44039",
-      "score": 40,
-      "flags": [
-        "Pre-foreclosure",
-        "Entity defendant (low priority)",
-        "New this week",
-        "Address captured"
       ]
     },
     {
