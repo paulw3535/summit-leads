@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-09-13T12:29:40.245099+00:00",
+  "fetched_at": "2026-09-14T13:33:48.937017+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-09-06",
-    "to": "2026-09-13"
+    "from": "2026-09-07",
+    "to": "2026-09-14"
   },
-  "total": 443,
-  "with_address": 15,
+  "total": 446,
+  "with_address": 18,
   "records": [
     {
       "doc_num": "CV-2026-09-3918",
@@ -378,6 +378,87 @@
       "mail_city": "Cincinnati",
       "mail_state": "OH",
       "mail_zip": "45202",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-09-3990",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-09-11",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "WILMINGTON SAVINGS FUND SOCIETY, FBS, NO",
+      "grantee": "DOROTHY CHAVIS",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-09-3990&Suffix=&Type=",
+      "prop_address": "1635 Delba Street",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44307",
+      "mail_address": "1635 Delba Street",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44307",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-09-3994",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-09-11",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "NEWREZ LLC",
+      "grantee": "JAYME A. HUDSON",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-09-3994&Suffix=&Type=",
+      "prop_address": "178 S. Firestone Blvd",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44301",
+      "mail_address": "178 S. Firestone Blvd",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44301",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-09-3996",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-09-12",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "WILMINGTON SAVINGS FUND SOCIETY, FSB",
+      "grantee": "SHAUNA LYN GARDNER",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-09-3996&Suffix=&Type=",
+      "prop_address": "296 Madison Ave",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44320",
+      "mail_address": "296 Madison Ave",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44320",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
