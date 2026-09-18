@@ -1,67 +1,13 @@
 {
-  "fetched_at": "2026-09-17T12:22:02.525954+00:00",
+  "fetched_at": "2026-09-18T12:01:15.798917+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-09-10",
-    "to": "2026-09-17"
+    "from": "2026-09-11",
+    "to": "2026-09-18"
   },
-  "total": 448,
-  "with_address": 18,
+  "total": 447,
+  "with_address": 17,
   "records": [
-    {
-      "doc_num": "CV-2026-09-3960",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-09-10",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "THE HUNTINGTON NATIONAL BANK",
-      "grantee": "STEPHEN T FACSINA",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-09-3960&Suffix=&Type=",
-      "prop_address": "2206 Heather Lane",
-      "prop_city": "Twinsburg",
-      "prop_state": "OH",
-      "prop_zip": "44087",
-      "mail_address": "2206 Heather Lane",
-      "mail_city": "Twinsburg",
-      "mail_state": "OH",
-      "mail_zip": "44087",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-09-3962",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-09-10",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "PENNYMAC LOAN SERVICES, LLC",
-      "grantee": "JOHN COCO",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-09-3962&Suffix=&Type=",
-      "prop_address": "2441 15Th Street",
-      "prop_city": "Cuyahoga Falls",
-      "prop_state": "OH",
-      "prop_zip": "44223",
-      "mail_address": "2441 15Th Street",
-      "mail_city": "Cuyahoga Falls",
-      "mail_state": "OH",
-      "mail_zip": "44223",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
     {
       "doc_num": "CV-2026-09-3979",
       "doc_type": "FORECLOSURE COMPLAINT",
@@ -8336,6 +8282,33 @@
         "Tax lien",
         "Individual defendant",
         "New this week"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-09-4068",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-09-17",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "RAIN CITY CAPITAL, LLC",
+      "grantee": "KEVIN TILLERY HOMES, LLC",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-09-4068&Suffix=&Type=",
+      "prop_address": "829 Elmore Avenue",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44302",
+      "mail_address": "829 Elmore Avenue",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44302",
+      "score": 40,
+      "flags": [
+        "Pre-foreclosure",
+        "Entity defendant (low priority)",
+        "New this week",
+        "Address captured"
       ]
     },
     {
