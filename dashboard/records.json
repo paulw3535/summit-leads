@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-09-20T11:57:44.485185+00:00",
+  "fetched_at": "2026-09-21T13:32:42.056668+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-09-13",
-    "to": "2026-09-20"
+    "from": "2026-09-14",
+    "to": "2026-09-21"
   },
-  "total": 343,
-  "with_address": 15,
+  "total": 346,
+  "with_address": 18,
   "records": [
     {
       "doc_num": "CV-2026-09-4003",
@@ -378,6 +378,87 @@
       "mail_city": "Akron",
       "mail_state": "OH",
       "mail_zip": "44310",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-09-4082",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-09-18",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "THE HUNTINGTON NATIONAL BANK",
+      "grantee": "VIKESH KUMAR",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-09-4082&Suffix=&Type=",
+      "prop_address": "10907 Ravenna Rd",
+      "prop_city": "Twinsburg",
+      "prop_state": "OH",
+      "prop_zip": "44087",
+      "mail_address": "10907 Ravenna Rd",
+      "mail_city": "Twinsburg",
+      "mail_state": "OH",
+      "mail_zip": "44087",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-09-4084",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-09-18",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "THE HUNTINGTON NATIONAL BANK",
+      "grantee": "VIRGINIA M BARNES",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-09-4084&Suffix=&Type=",
+      "prop_address": "323 N. Adams Street",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44304",
+      "mail_address": "323 N. Adams Street",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44304",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-09-4088",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-09-18",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "PNC BANK, NATIONAL ASSOCIATION",
+      "grantee": "EDWARD M. FOGLE",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-09-4088&Suffix=&Type=",
+      "prop_address": "10583 Connecticut Street",
+      "prop_city": "Reminderville",
+      "prop_state": "OH",
+      "prop_zip": "44202",
+      "mail_address": "10583 Connecticut Street",
+      "mail_city": "Reminderville",
+      "mail_state": "OH",
+      "mail_zip": "44202",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
