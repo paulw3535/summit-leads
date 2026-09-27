@@ -1,9 +1,9 @@
 {
-  "fetched_at": "2026-09-26T12:00:25.372684+00:00",
+  "fetched_at": "2026-09-27T12:38:42.258152+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-09-19",
-    "to": "2026-09-26"
+    "from": "2026-09-20",
+    "to": "2026-09-27"
   },
   "total": 20,
   "with_address": 19,
