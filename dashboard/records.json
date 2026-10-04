@@ -1,40 +1,13 @@
 {
-  "fetched_at": "2026-10-03T12:10:54.578559+00:00",
+  "fetched_at": "2026-10-04T12:59:58.925799+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-09-26",
-    "to": "2026-10-03"
+    "from": "2026-09-27",
+    "to": "2026-10-04"
   },
-  "total": 265,
-  "with_address": 15,
+  "total": 264,
+  "with_address": 14,
   "records": [
-    {
-      "doc_num": "CV-2026-09-4213",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-09-26",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "U.S. BANK TRUST NATIONAL ASSOCIATION",
-      "grantee": "EDWARD L WALKER",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-09-4213&Suffix=&Type=",
-      "prop_address": "1588 Pilgram Street",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44305",
-      "mail_address": "1588 Pilgram Street",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44305",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
     {
       "doc_num": "CV-2026-09-4214",
       "doc_type": "FORECLOSURE COMPLAINT",
