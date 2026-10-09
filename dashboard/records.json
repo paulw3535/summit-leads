@@ -1,94 +1,13 @@
 {
-  "fetched_at": "2026-10-08T14:23:18.601738+00:00",
+  "fetched_at": "2026-10-09T14:03:39.510306+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-10-01",
-    "to": "2026-10-08"
+    "from": "2026-10-02",
+    "to": "2026-10-09"
   },
-  "total": 262,
-  "with_address": 12,
+  "total": 259,
+  "with_address": 10,
   "records": [
-    {
-      "doc_num": "CV-2026-10-4275",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-10-01",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "ROCKET MORTGAGE, LLC",
-      "grantee": "JASON JOWHAR SCHMIDT",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-10-4275&Suffix=&Type=",
-      "prop_address": "1568 W Exchange St",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44313",
-      "mail_address": "1568 W Exchange St",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44313",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-10-4277",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-10-01",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "AMERICAN FINANCIAL RESOURCES, LLC",
-      "grantee": "ROYAL S EVANS",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-10-4277&Suffix=&Type=",
-      "prop_address": "2225 Thurmont Rd",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44313",
-      "mail_address": "2225 Thurmont Rd",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44313",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-10-4294",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-10-01",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "FEDERAL HOME LOAN MORTGAGE CORPORATION",
-      "grantee": "BARBARA S SUTTON",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-10-4294&Suffix=&Type=",
-      "prop_address": "1349 Getz St",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44301",
-      "mail_address": "1349 Getz St",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44301",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
     {
       "doc_num": "CV-2026-10-4302",
       "doc_type": "FORECLOSURE COMPLAINT",
@@ -270,6 +189,60 @@
       "mail_city": "Akron",
       "mail_state": "OH",
       "mail_zip": "44301",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-10-4384",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-10-08",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "MIDFIRST BANK",
+      "grantee": "SEAN P. HUNT",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-10-4384&Suffix=&Type=",
+      "prop_address": "618 Stanley Road",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44312",
+      "mail_address": "618 Stanley Road",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44312",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-10-4385",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-10-08",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "ROCKET MORTGAGE, LLC",
+      "grantee": "SCOTT M PHILLIPS",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-10-4385&Suffix=&Type=",
+      "prop_address": "1937 Springfield Lake Boulevard",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44312",
+      "mail_address": "1937 Springfield Lake Boulevard",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44312",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
@@ -1057,32 +1030,6 @@
       "flags": [
         "Tax lien",
         "Multiple filings",
-        "Individual defendant",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-10-4272",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-10-01",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "GLEN EAGLE CONDOMINIUM ASSOCIATION",
-      "grantee": "JERMAINE BENNETT",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-10-4272&Suffix=&Type=",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "OH",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "",
-      "mail_zip": "",
-      "score": 60,
-      "flags": [
-        "Pre-foreclosure",
         "Individual defendant",
         "New this week"
       ]
@@ -5583,33 +5530,6 @@
         "Tax lien",
         "Individual defendant",
         "New this week"
-      ]
-    },
-    {
-      "doc_num": "CV-2026-10-4293",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-10-01",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "U.S. BANK TRUST COMPANY, NATIONAL ASSOCI",
-      "grantee": "CARBON HOLDINGS, LLC",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-10-4293&Suffix=&Type=",
-      "prop_address": "30195 Chagrin Blvd",
-      "prop_city": "Cleveland",
-      "prop_state": "OH",
-      "prop_zip": "44124",
-      "mail_address": "30195 Chagrin Blvd",
-      "mail_city": "Cleveland",
-      "mail_state": "OH",
-      "mail_zip": "44124",
-      "score": 40,
-      "flags": [
-        "Pre-foreclosure",
-        "Entity defendant (low priority)",
-        "New this week",
-        "Address captured"
       ]
     },
     {
