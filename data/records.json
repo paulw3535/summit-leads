@@ -1,40 +1,13 @@
 {
-  "fetched_at": "2026-10-31T13:14:43.468051+00:00",
+  "fetched_at": "2026-11-01T13:58:29.858535+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-10-24",
-    "to": "2026-10-31"
+    "from": "2026-10-25",
+    "to": "2026-11-01"
   },
-  "total": 253,
-  "with_address": 18,
+  "total": 252,
+  "with_address": 17,
   "records": [
-    {
-      "doc_num": "CV-2026-10-4671",
-      "doc_type": "FORECLOSURE COMPLAINT",
-      "filed": "2026-10-24",
-      "cat": "foreclosure",
-      "cat_label": "Foreclosure Complaint",
-      "owner": "CITIBANK, N.A.",
-      "grantee": "JOHN A. COLLIER",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-10-4671&Suffix=&Type=",
-      "prop_address": "617 Massillon Rd",
-      "prop_city": "Akron",
-      "prop_state": "OH",
-      "prop_zip": "44306",
-      "mail_address": "617 Massillon Rd",
-      "mail_city": "Akron",
-      "mail_state": "OH",
-      "mail_zip": "44306",
-      "score": 70,
-      "flags": [
-        "Pre-foreclosure",
-        "Individual defendant",
-        "New this week",
-        "Address captured"
-      ]
-    },
     {
       "doc_num": "CV-2026-10-4667",
       "doc_type": "FORECLOSURE COMPLAINT",
