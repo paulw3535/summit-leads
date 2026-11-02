@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-11-01T13:58:29.858535+00:00",
+  "fetched_at": "2026-11-02T16:45:09.957210+00:00",
   "source": "Summit County Clerk of Courts - Civil Division",
   "date_range": {
-    "from": "2026-10-25",
-    "to": "2026-11-01"
+    "from": "2026-10-26",
+    "to": "2026-11-02"
   },
-  "total": 252,
-  "with_address": 17,
+  "total": 255,
+  "with_address": 20,
   "records": [
     {
       "doc_num": "CV-2026-10-4667",
@@ -459,6 +459,60 @@
       "mail_city": "Uniontown",
       "mail_state": "OH",
       "mail_zip": "44685",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-11-4771",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-10-30",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "CARRINGTON MORTGAGE SERVICES, LLC",
+      "grantee": "ERIN L SIMONETTI",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-11-4771&Suffix=&Type=",
+      "prop_address": "45 Borton Avenue",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44302",
+      "mail_address": "45 Borton Avenue",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44302",
+      "score": 70,
+      "flags": [
+        "Pre-foreclosure",
+        "Individual defendant",
+        "New this week",
+        "Address captured"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-11-4782",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-10-30",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "ROCKET MORTGAGE, LLC S/B/M NATIONSTAR MO",
+      "grantee": "MICHAEL D FEUDO",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-11-4782&Suffix=&Type=",
+      "prop_address": "11136 Heritage Drive",
+      "prop_city": "Twinsburg",
+      "prop_state": "OH",
+      "prop_zip": "44087",
+      "mail_address": "11136 Heritage Drive",
+      "mail_city": "Twinsburg",
+      "mail_state": "OH",
+      "mail_zip": "44087",
       "score": 70,
       "flags": [
         "Pre-foreclosure",
@@ -4187,6 +4241,33 @@
         "Tax lien",
         "Individual defendant",
         "New this week"
+      ]
+    },
+    {
+      "doc_num": "CV-2026-11-4779",
+      "doc_type": "FORECLOSURE COMPLAINT",
+      "filed": "2026-10-30",
+      "cat": "foreclosure",
+      "cat_label": "Foreclosure Complaint",
+      "owner": "COMPUTERSHARE TRUST COMPANY, N.A., NOT I",
+      "grantee": "AAROH CAPITAL LLC",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx?CaseNo=CV-2026-11-4779&Suffix=&Type=",
+      "prop_address": "1208 -1210 Bellows Street",
+      "prop_city": "Akron",
+      "prop_state": "OH",
+      "prop_zip": "44301",
+      "mail_address": "1208 -1210 Bellows Street",
+      "mail_city": "Akron",
+      "mail_state": "OH",
+      "mail_zip": "44301",
+      "score": 40,
+      "flags": [
+        "Pre-foreclosure",
+        "Entity defendant (low priority)",
+        "New this week",
+        "Address captured"
       ]
     },
     {
